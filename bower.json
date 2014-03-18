@@ -1,0 +1,8 @@
+{
+  "name": "core-overlay",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master",
+    "core-key-helper": "Polymer/core-key-helper#master"
+  }
+}
