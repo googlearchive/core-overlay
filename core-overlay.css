@@ -20,12 +20,12 @@ We address this by using script based positioning =(
 	transition: opacity 0.001s;
 }
 
-:host(.revealed) {
+:host(.core-revealed) {
 	display: block;
 	opacity: 0;
 }
 
-:host(.revealed.opened) {
+:host(.core-revealed.core-opened) {
 	display: block;
 	opacity: 1;
 }

@@ -26,13 +26,23 @@
 				margin-left: -256px;
 			}
 
+			#confirmation.core-opened {
+				top: 100px;
+			}
+
+			#confirmation.core-closed {
+				left: 100%;
+				top: 100px;
+			}
+
 			#confirmation {
 				position: absolute;
 				left: 50%;
-				top: 100px;
+				top: 0;
 				text-align: center;
 				width: 150px;
 				margin-left: -75px;
+				transition: all .3s ease-in-out;
 			}
 		</style>
 	</head>
@@ -44,9 +54,9 @@
 			<div>
 				<input placeholder="say something..." autofocus oninput="somethingCheck(this)"></input><br>
 				I agree with this wholeheartedly.
-				<x-dialog id="confirmation" class="dialog">
+				<core-overlay id="confirmation" class="dialog">
 					Thank you.
-				</x-dialog>
+				</core-overlay>
 			</div><br><br>
 			<script>
 				function somethingCheck(e) {
@@ -66,6 +76,10 @@
 					:host(:focus) {
 						display: block;
 						background: green;
+					}
+
+					:host(.core-overlay) {
+						transition: opacity 0.3s ease-in;
 					}
 
 					:host {

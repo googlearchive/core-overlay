@@ -113,7 +113,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @default false
          */
         autoCloseDisabled: false,
-        captureEventType: 'tap',
+        captureEventName: 'tap',
+        completeEventName: 'transitionend',
 
         targetListeners: {
           'tap': 'tapHandler',
@@ -132,12 +133,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return null;
         },
 
+        ready: function() {
+          this.target = this.target || this;
+        },
+
         /** 
          * Toggle the opened state of the overlay.
          * @method toggle
          */
         toggle: function() {
           this.opened = !this.opened;
+        },
+
+        /** 
+         * Open the overlay. This is equivalent to setting the `opened`
+         * property to true.
+         * @method open
+         */
+        open: function() {
+          this.opened = true;
+        },
+
+        /** 
+         * Close the overlay. This is equivalent to setting the `opened` 
+         * property to false.
+         * @method open
+         */
+        close: function() {
+          this.opened = false;
         },
 
         targetChanged: function(old) {
@@ -160,24 +183,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.ensureStyle();
         },
 
+        // TODO(sorvell): shim styles!!
         ensureStyle: function() {
-          if (this.target === this) {
-            if (!this._hasOverlayStyle) {
-              this._hasOverlayStyle = true;
-              this.createShadowRoot().appendChild(
-                  this.overlayStyle.cloneNode(true));
+          if (!this.target._hasOverlayStyle) {
+            if (!this.target.shadowRoot) {
+              this.target.createShadowRoot().innerHTML = '<content></content>';
             }
-          } else if (!this.target._hasControllerStyle) {
-            this.target._hasControllerStyle = true;
-            this.installScopeStyle(this.controllerStyle, 'overlay', this.target);
+            var root = this.target.shadowRoot;
+            root.insertBefore(this.overlayStyle.cloneNode(true),
+                root.firstElementChild);
           }
         },
 
         openedChanged: function() {
-          if (!this.target) {
-            this.target = this;
-            this.targetChanged();
-          }
           this.prepareRenderOpened();
           // continue styling after delay so display state can change
           // without aborting transitions
@@ -193,7 +211,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (!this.autoCloseDisabled) {
               // TODO(sorvell): how does this work with retargeting?
               this.enableElementListener(this.opened, document,
-                  this.captureEventType, 'captureHandler', true);
+                  this.captureEventName, 'captureHandler', true);
             }
           });
           this.enableElementListener(this.opened, window, 'resize',
@@ -204,17 +222,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // tasks which cause the overlay to actually open; typically play an
         // animation
+        // TODO(sorvell): normalize event names: transitionend, animationend
         renderOpened: function() {
           this.target.classList.toggle('core-opened', this.opened);
-          // TODO(sorvell): use transition event by default.
-          this.async('completeRenderOpened');
+          this.target.classList.toggle('core-closed', !this.opened);
+          var completeMethod = 'completeRenderOpened';
+          if (this.completeEventName) {
+            this.addElementListener(this.target, this.completeEventName, 
+                completeMethod);
+          } else {
+            this.async(completeMethod);
+          }
         },
 
         // finishing tasks; typically called via an animation end event
         completeRenderOpened: function() {
-          //this.target.classList.remove('core-animating');
+          if (this.completeEventName) {
+            this.removeElementListener(this.target, this.completeEventName, 
+                'completeRenderOpened');
+          }
           this.target.classList.toggle('core-revealed', this.opened);
           if (!this.opened) {
+            this.target.classList.remove('core-closed');
             this.resetTargetPosition();
           }
           this.applyFocus();
