@@ -113,7 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          */
         autoCloseDisabled: false,
         captureEventName: 'tap',
-        completeEventName: 'transitionend',
+        completionEventName: 'transitionend',
 
         targetListeners: {
           'tap': 'tapHandler',
@@ -225,8 +225,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.target.classList.toggle('core-opened', this.opened);
           this.target.classList.toggle('core-closed', !this.opened);
           var completeMethod = 'completeRenderOpened';
-          if (this.completeEventName) {
-            this.addElementListener(this.target, this.completeEventName, 
+          if (this.completionEventName) {
+            this.addElementListener(this.target, this.completionEventName, 
                 completeMethod);
           } else {
             this.async(completeMethod);
@@ -235,8 +235,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // finishing tasks; typically called via an animation end event
         completeRenderOpened: function() {
-          if (this.completeEventName) {
-            this.removeElementListener(this.target, this.completeEventName, 
+          if (this.completionEventName) {
+            this.removeElementListener(this.target, this.completionEventName, 
                 'completeRenderOpened');
           }
           this.target.classList.toggle('core-revealed', this.opened);
