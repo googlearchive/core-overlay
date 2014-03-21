@@ -16,7 +16,6 @@ We address this by using script based positioning =(
 	z-index: 10;
 	outline: none;
 	display: none;
-	-webkit-transition: opacity 0.001s;
 	transition: opacity 0.001s;
 }
 

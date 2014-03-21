@@ -77,8 +77,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <polymer-element name="core-overlay" attributes="target opened autoCloseDisabled">
   
   <template>
-    <link rel="stylesheet" href="core-overlay.css">
-    <link rel="stylesheet" href="core-overlay-controller.css">
+    <link no-shim rel="stylesheet" href="core-overlay.css">
   </template>
   
   <script>
@@ -123,9 +122,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         
         registerCallback: function(element) {
           this.keyHelper = document.createElement('core-key-helper');
-          var content = element.templateContent();
-          this.overlayStyle = content.firstElementChild;
-          this.controllerStyle = content.lastElementChild;
+          this.overlayStyle = element.templateContent().firstElementChild;
         },
 
         // template is just for loading styles, we don't need a shadowRoot
@@ -135,6 +132,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         ready: function() {
           this.target = this.target || this;
+          // flush to ensure styles are installed before paint
+          Platform.flush();
         },
 
         /** 
@@ -164,12 +163,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         targetChanged: function(old) {
-          // we need this since we call targetChanged synchronously
-          if (old === this.target) {
-            return;
-          }
           if (this.target) {
-            // TODO(sorvell): figure out how to do this right: ensure focusable
+            // really make sure tabIndex is set
             if (this.target.tabIndex < 0) {
               this.target.tabIndex = -1;
             }
@@ -183,15 +178,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.ensureStyle();
         },
 
-        // TODO(sorvell): shim styles!!
         ensureStyle: function() {
           if (!this.target._hasOverlayStyle) {
             if (!this.target.shadowRoot) {
               this.target.createShadowRoot().innerHTML = '<content></content>';
             }
-            var root = this.target.shadowRoot;
-            root.insertBefore(this.overlayStyle.cloneNode(true),
-                root.firstElementChild);
+            this.installScopeStyle(this.overlayStyle, 'overlay',
+                this.target.shadowRoot);
+            this.target._hasOverlayStyle = true;
           }
         },
 
@@ -218,6 +212,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               'resizeHandler');
           this.positionTarget();
           this.target.classList.add('core-revealed');
+          // TODO(sorvell): force SD Polyfill to render
+          if (window.ShadowDOMPolyfill) {
+            this.target.offsetHeight;
+          }
         },
 
         // tasks which cause the overlay to actually open; typically play an
