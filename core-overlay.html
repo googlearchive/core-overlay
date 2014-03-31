@@ -210,12 +210,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
           this.enableElementListener(this.opened, window, 'resize',
               'resizeHandler');
-          this.positionTarget();
           this.target.classList.add('core-revealed');
           // TODO(sorvell): force SD Polyfill to render
           if (window.ShadowDOMPolyfill) {
             this.target.offsetHeight;
           }
+          this.positionTarget();
         },
 
         // tasks which cause the overlay to actually open; typically play an
@@ -268,11 +268,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // vertically and horizontally center if not positioned
             var computed = getComputedStyle(this.target);
             var rect = this.target.getBoundingClientRect();
-            if (computed.top === 'auto' && computed.bottom === 'auto') {
+            if (this._shouldPositionTop === undefined) {
+              this._shouldPositionTop = (computed.top === 'auto' && 
+                  computed.bottom === 'auto');
+            }
+            if (this._shouldPositionLeft === undefined) {
+              this._shouldPositionLeft = (computed.left === 'auto' &&
+                  computed.right === 'auto');
+            }
+            if (this._shouldPositionTop) {
               this.target.style.top = ((window.innerHeight - rect.height) / 2)
                   + 'px';
             }
-            if (computed.left === 'auto' && computed.right === 'auto') {
+            if (this._shouldPositionLeft) {
               this.target.style.left = ((window.innerWidth - rect.width) / 2)
                   + 'px';
             }
@@ -319,6 +327,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @method resizeHandler
          */
         resizeHandler: function() {
+          this.positionTarget();
         },
 
         // TODO(sorvell): these utility methods should not be here.
