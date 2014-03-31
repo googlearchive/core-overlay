@@ -74,7 +74,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  */
 -->
 
-<polymer-element name="core-overlay" attributes="target opened autoCloseDisabled">
+<polymer-element name="core-overlay" attributes="target opened autoCloseDisabled margin sizingTarget">
   
   <template>
     <link no-shim rel="stylesheet" href="core-overlay.css">
@@ -112,6 +112,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @default false
          */
         autoCloseDisabled: false,
+        margin: 0,
         captureEventName: 'tap',
         completionEventName: 'transitionend',
 
@@ -215,7 +216,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (window.ShadowDOMPolyfill) {
             this.target.offsetHeight;
           }
-          this.positionTarget();
+          this.updateTargetDimensions();
         },
 
         // tasks which cause the overlay to actually open; typically play an
@@ -242,7 +243,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.target.classList.toggle('core-revealed', this.opened);
           if (!this.opened) {
             this.target.classList.remove('core-closed');
-            this.resetTargetPosition();
+            this.resetTargetDimensions();
           }
           this.applyFocus();
         },
@@ -263,32 +264,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         },
 
-        positionTarget: function() {
+        updateTargetDimensions: function() {
           if (this.opened) {
-            // vertically and horizontally center if not positioned
-            var computed = getComputedStyle(this.target);
-            var rect = this.target.getBoundingClientRect();
-            if (this._shouldPositionTop === undefined) {
-              this._shouldPositionTop = (computed.top === 'auto' && 
-                  computed.bottom === 'auto');
-            }
-            if (this._shouldPositionLeft === undefined) {
-              this._shouldPositionLeft = (computed.left === 'auto' &&
-                  computed.right === 'auto');
-            }
-            if (this._shouldPositionTop) {
-              this.target.style.top = ((window.innerHeight - rect.height) / 2)
-                  + 'px';
-            }
-            if (this._shouldPositionLeft) {
-              this.target.style.left = ((window.innerWidth - rect.width) / 2)
-                  + 'px';
-            }
+            this.sizeTarget();
+            this.positionTarget();
           }
         },
 
-        resetTargetPosition: function() {
+        sizeTarget: function() {
+          var sizer = this.sizingTarget || this.target;
+          var rect = sizer.getBoundingClientRect();
+          var mt = rect.top === this.margin ? this.margin : this.margin * 2;
+          var ml = rect.left === this.margin ? this.margin : this.margin * 2;
+          var h = window.innerHeight - rect.top - mt;
+          var w = window.innerWidth - rect.left - ml;
+          sizer.style.maxHeight = h + 'px';
+          sizer.style.maxWidth = w + 'px';
+        },
+
+        positionTarget: function() {
+          // vertically and horizontally center if not positioned
+          var rect = this.target.getBoundingClientRect();
+          var computed;
+          if (this._shouldPositionTop === undefined) {
+            computed = computed || getComputedStyle(this.target);
+            this._shouldPositionTop = (computed.top === 'auto' && 
+                computed.bottom === 'auto');
+          }
+          if (this._shouldPositionLeft === undefined) {
+            computed = computed || getComputedStyle(this.target);
+            this._shouldPositionLeft = (computed.left === 'auto' &&
+                computed.right === 'auto');
+          }
+          if (this._shouldPositionTop) {
+            var t = Math.max((window.innerHeight - rect.height) / 2, 0);
+            this.target.style.top = t + 'px';
+          }
+          if (this._shouldPositionLeft) {
+            var l = Math.max((window.innerWidth - rect.width) / 2, 0);
+            this.target.style.left = l + 'px';
+          }
+        },
+
+        resetTargetDimensions: function() {
           this.target.style.top = this.target.style.left = null;
+          this.target.style.width = this.target.style.height = null;
         },
 
         tapHandler: function(e) {
@@ -327,7 +347,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @method resizeHandler
          */
         resizeHandler: function() {
-          this.positionTarget();
+          this.updateTargetDimensions();
         },
 
         // TODO(sorvell): these utility methods should not be here.
