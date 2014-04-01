@@ -266,6 +266,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         updateTargetDimensions: function() {
           if (this.opened) {
+            if (!this._shouldPosition) {
+              this.target.style.position = 'static';
+              var computed = getComputedStyle(this.target);
+              var t = (computed.top === 'auto' && computed.bottom === 'auto');
+              var l = (computed.left === 'auto' && computed.right === 'auto');
+              this.target.style.position = '';
+              this._shouldPosition = {top: t, left: l};
+            }
+            
             this.sizeTarget();
             this.positionTarget();
           }
@@ -285,22 +294,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         positionTarget: function() {
           // vertically and horizontally center if not positioned
           var rect = this.target.getBoundingClientRect();
-          var computed;
-          if (this._shouldPositionTop === undefined) {
-            computed = computed || getComputedStyle(this.target);
-            this._shouldPositionTop = (computed.top === 'auto' && 
-                computed.bottom === 'auto');
-          }
-          if (this._shouldPositionLeft === undefined) {
-            computed = computed || getComputedStyle(this.target);
-            this._shouldPositionLeft = (computed.left === 'auto' &&
-                computed.right === 'auto');
-          }
-          if (this._shouldPositionTop) {
+          if (this._shouldPosition.top) {
             var t = Math.max((window.innerHeight - rect.height) / 2, 0);
             this.target.style.top = t + 'px';
           }
-          if (this._shouldPositionLeft) {
+          if (this._shouldPosition.left) {
             var l = Math.max((window.innerWidth - rect.width) / 2, 0);
             this.target.style.left = l + 'px';
           }
@@ -309,6 +307,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         resetTargetDimensions: function() {
           this.target.style.top = this.target.style.left = null;
           this.target.style.width = this.target.style.height = null;
+          this._shouldPosition = null;
         },
 
         tapHandler: function(e) {
