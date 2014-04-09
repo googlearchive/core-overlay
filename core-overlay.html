@@ -275,11 +275,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this._shouldPosition = {top: t, left: l};
             }
             
+            // TODO(sorvell): need to work out interaction between sizing 
+            // and positioning
             this.sizeTarget();
             this.positionTarget();
           }
         },
 
+        // TODO(sorvell): getBoundingClientRect may give dubious info due to
+        // transform.
         sizeTarget: function() {
           var sizer = this.sizingTarget || this.target;
           var rect = sizer.getBoundingClientRect();
@@ -293,13 +297,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         positionTarget: function() {
           // vertically and horizontally center if not positioned
-          var rect = this.target.getBoundingClientRect();
           if (this._shouldPosition.top) {
-            var t = Math.max((window.innerHeight - rect.height) / 2, 0);
+            var t = Math.max((window.innerHeight - 
+                this.target.offsetHeight) / 2, 0);
             this.target.style.top = t + 'px';
           }
           if (this._shouldPosition.left) {
-            var l = Math.max((window.innerWidth - rect.width) / 2, 0);
+            var l = Math.max((window.innerWidth - 
+                this.target.offsetWidth) / 2, 0);
             this.target.style.left = l + 'px';
           }
         },

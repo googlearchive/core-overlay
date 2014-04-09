@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<title>core-overlay</title>
-		<link rel="import" href="core-overlay.html">
 		<script src="../platform/platform.js"></script>
+		<link rel="import" href="core-overlay.html">
 		<style>
 			.dialog {
 				box-sizing: border-box;
@@ -20,10 +20,20 @@
 			}
 
 			#dialog {
-				top: 72px;
-				left: 50%;
+				/*top: 72px;
+				left: 10px;
+				margin-left: -256px;*/
 				width: 512px;
-				margin-left: -256px;
+				
+			}
+
+			#dialog.core-revealed {
+				transition: all 0.3s ease-in;
+				-webkit-transform: scale(0.1) translateY(-500px);
+			}
+
+			#dialog.core-overlay.core-opened {
+				-webkit-transform: none;	
 			}
 
 			#confirmation.core-opened {
@@ -51,6 +61,7 @@
 			<h2>Dialog</h2>
 			<div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed fringilla sapien sed enim sollicitudin laoreet. Suspendisse suscipit, metus ac volutpat sodales, libero magna semper lacus, molestie fringilla massa orci ut arcu. Nullam sodales urna sit amet odio vehicula mattis.</div><br><br>
 			<div>Ut aliquam vulputate congue. Vestibulum pretium pretium nulla quis sollicitudin. Praesent lacinia congue erat nec mattis. Fusce commodo lacus est. Duis turpis eros, ultrices sed aliquet non, blandit egestas velit. Integer a augue nec lorem tristique hendrerit. Curabitur imperdiet risus id enim bibendum vestibulum. Integer id magna at arcu faucibus fermentum vel a augue. Sed fringilla venenatis dolor, in blandit magna molestie luctus. Vestibulum dignissim posuere ultrices. Aenean urna nisl, tincidunt vitae iaculis ut, pharetra nec eros.</div><br><br>
+
 			<div>
 				<input placeholder="say something..." autofocus oninput="somethingCheck(this)"></input><br>
 				I agree with this wholeheartedly.
@@ -73,10 +84,6 @@
 		<polymer-element name="x-dialog" attributes="opened autoCloseDisabled">
 			<template>
 				<style>
-
-					:host(.core-overlay) {
-						transition: opacity 0.3s ease-in;
-					}
 
 					:host {
 						box-sizing: border-box;
