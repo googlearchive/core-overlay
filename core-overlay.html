@@ -211,27 +211,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
           this.enableElementListener(this.opened, window, 'resize',
               'resizeHandler');
-          this.target.classList.add('core-revealed');
-          // TODO(sorvell): force SD Polyfill to render
-          if (window.ShadowDOMPolyfill) {
-            this.target.offsetHeight;
+          //this.target.classList.add('core-revealed');
+          if (this.opened) {
+            // TODO(sorvell): force SD Polyfill to render
+            if (window.ShadowDOMPolyfill) {
+              this.target.offsetHeight;
+            }
+            if (!this._shouldPosition) {
+              this.target.style.position = 'static';
+              var computed = getComputedStyle(this.target);
+              var t = (computed.top === 'auto' && computed.bottom === 'auto');
+              var l = (computed.left === 'auto' && computed.right === 'auto');
+              this.target.style.position = '';
+              this._shouldPosition = {top: t, left: l};
+            }
+            // if we are showing, then take care when measuring
+            this.prepareMeasure(this.target);
+            this.updateTargetDimensions();
+            this.finishMeasure(this.target);
           }
-          this.updateTargetDimensions();
         },
 
         // tasks which cause the overlay to actually open; typically play an
         // animation
         // TODO(sorvell): normalize event names: transitionend, animationend
         renderOpened: function() {
-          this.target.classList.toggle('core-opened', this.opened);
-          this.target.classList.toggle('core-closed', !this.opened);
-          var completeMethod = 'completeRenderOpened';
-          if (this.completionEventName) {
-            this.addElementListener(this.target, this.completionEventName, 
-                completeMethod);
-          } else {
-            this.async(completeMethod);
-          }
+          this.target.classList.add('core-revealed');
+          this.async(function() {
+            this.target.classList.toggle('core-opened', this.opened);
+            this.target.classList.toggle('core-closed', !this.opened);
+            var completeMethod = 'completeRenderOpened';
+            if (this.completionEventName) {
+              this.addElementListener(this.target, this.completionEventName, 
+                  completeMethod);
+            } else {
+              this.async(completeMethod);
+            }
+          });
         },
 
         // finishing tasks; typically called via an animation end event
@@ -246,6 +262,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.resetTargetDimensions();
           }
           this.applyFocus();
+        },
+
+        prepareMeasure: function(target) {
+          target.style.display = 'block';
+          target.transition = target.webkitTransition = 'none';
+          target.transform = target.webkitTransform = 'none';
+        },
+
+        finishMeasure: function(target) {
+          target.style.display = null;
+          target.transform = target.webkitTransform = null;
+          target.transition = target.webkitTransition = null;
         },
 
         getFocusNode: function() {
@@ -265,25 +293,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         updateTargetDimensions: function() {
-          if (this.opened) {
-            if (!this._shouldPosition) {
-              this.target.style.position = 'static';
-              var computed = getComputedStyle(this.target);
-              var t = (computed.top === 'auto' && computed.bottom === 'auto');
-              var l = (computed.left === 'auto' && computed.right === 'auto');
-              this.target.style.position = '';
-              this._shouldPosition = {top: t, left: l};
-            }
-            
-            // TODO(sorvell): need to work out interaction between sizing 
-            // and positioning
-            this.sizeTarget();
-            this.positionTarget();
-          }
+          this.positionTarget();
+          this.sizeTarget();
         },
 
-        // TODO(sorvell): getBoundingClientRect may give dubious info due to
-        // transform.
         sizeTarget: function() {
           var sizer = this.sizingTarget || this.target;
           var rect = sizer.getBoundingClientRect();
@@ -299,12 +312,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // vertically and horizontally center if not positioned
           if (this._shouldPosition.top) {
             var t = Math.max((window.innerHeight - 
-                this.target.offsetHeight) / 2, 0);
+                this.target.offsetHeight - this.margin*2) / 2, this.margin);
             this.target.style.top = t + 'px';
           }
           if (this._shouldPosition.left) {
             var l = Math.max((window.innerWidth - 
-                this.target.offsetWidth) / 2, 0);
+                this.target.offsetWidth - this.margin*2) / 2, this.margin);
             this.target.style.left = l + 'px';
           }
         },
