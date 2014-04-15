@@ -3,6 +3,7 @@
 	<head>
 		<title>core-overlay</title>
 		<script src="../platform/platform.js"></script>
+		<link rel="import" href="../core-transition/core-transition-css.html">
 		<link rel="import" href="core-overlay.html">
 		<style>
 			.dialog {
@@ -26,7 +27,7 @@
 			}
 
 			#dialog.core-revealed {
-				transition: -webkit-transform 0.2s ease-in, opacity 0.2s ease-in;
+				transition: -webkit-transform 0.2s ease-in-out, opacity 0.2s ease-in;
 				-webkit-transform: scale(0.1) translateY(-500px);
 			}
 

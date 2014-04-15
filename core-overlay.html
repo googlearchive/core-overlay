@@ -8,6 +8,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-transition/core-transition.html">
 <link rel="import" href="core-key-helper.html">
 
 <!--
@@ -74,11 +75,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  */
 -->
 
-<polymer-element name="core-overlay" attributes="target opened autoCloseDisabled margin sizingTarget">
-  
-  <template>
-    <link no-shim rel="stylesheet" href="core-overlay.css">
-  </template>
+<polymer-element name="core-overlay" attributes="target opened autoCloseDisabled margin sizingTarget transition">
   
   <script>
     (function() {
@@ -114,21 +111,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         autoCloseDisabled: false,
         margin: 0,
         captureEventName: 'tap',
-        completionEventName: 'transitionend',
+        transition: '',
+        defaultTransition: 'overlay-transition',
 
         targetListeners: {
           'tap': 'tapHandler',
-          'keydown': 'keydownHandler'
+          'keydown': 'keydownHandler',
+          'core-transitionend': 'transitionend'
         },
         
         registerCallback: function(element) {
           this.keyHelper = document.createElement('core-key-helper');
-          this.overlayStyle = element.templateContent().firstElementChild;
-        },
-
-        // template is just for loading styles, we don't need a shadowRoot
-        fetchTemplate: function() {
-          return null;
+          this.meta = document.createElement('core-transition');
         },
 
         ready: function() {
@@ -165,28 +159,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         targetChanged: function(old) {
           if (this.target) {
+            var transition = this.getTransition();
             // really make sure tabIndex is set
             if (this.target.tabIndex < 0) {
               this.target.tabIndex = -1;
             }
+            var computed = getComputedStyle(this.target);
+            this.targetStyle = {
+              position: computed.position === 'static' ? 'fixed' :
+                  computed.position,
+              display: computed.display
+            }
+            //this.target.style.position = this.targetStyle.position;
+            //this.target.style.outline = this.target.style.display = 'none';
             this.target.classList.add('core-overlay');
+            if (transition) {
+              transition.setup(this.target);
+            }
             this.addElementListenerList(this.target, this.targetListeners);
           }
           if (old) {
-            old.classList.remove('core-overlay');
             this.removeElementListenerList(old, this.targetListeners);
-          }
-          this.ensureStyle();
-        },
-
-        ensureStyle: function() {
-          if (!this.target._hasOverlayStyle) {
-            if (!this.target.shadowRoot) {
-              this.target.createShadowRoot().innerHTML = '<content></content>';
+            if (transition) {
+              transition.teardown(old);
             }
-            this.installScopeStyle(this.overlayStyle, 'overlay',
-                this.target.shadowRoot);
-            this.target._hasOverlayStyle = true;
+            //old.style.position = null;
+            //old.style.outline = old.style.display = null;
+            this.target.classList.remove('core-overlay');
+          }
+          if (transition) {
+            transition.setup(this.target);
           }
         },
 
@@ -211,7 +213,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
           this.enableElementListener(this.opened, window, 'resize',
               'resizeHandler');
-          //this.target.classList.add('core-revealed');
           if (this.opened) {
             // TODO(sorvell): force SD Polyfill to render
             if (window.ShadowDOMPolyfill) {
@@ -222,7 +223,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var computed = getComputedStyle(this.target);
               var t = (computed.top === 'auto' && computed.bottom === 'auto');
               var l = (computed.left === 'auto' && computed.right === 'auto');
-              this.target.style.position = '';
+              this.target.style.position = this.targetStyle.position;
               this._shouldPosition = {top: t, left: l};
             }
             // if we are showing, then take care when measuring
@@ -236,30 +237,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // animation
         // TODO(sorvell): normalize event names: transitionend, animationend
         renderOpened: function() {
-          this.target.classList.add('core-revealed');
-          this.async(function() {
-            this.target.classList.toggle('core-opened', this.opened);
-            this.target.classList.toggle('core-closed', !this.opened);
-            var completeMethod = 'completeRenderOpened';
-            if (this.completionEventName) {
-              this.addElementListener(this.target, this.completionEventName, 
-                  completeMethod);
-            } else {
-              this.async(completeMethod);
-            }
-          });
+          var t = this.getTransition();
+          if (t) {
+            t.go(this.target, {opened: this.opened});
+          } else {
+            this.target.style.display = this.targetStyle.display;
+            this.transitionend();
+          }
         },
 
         // finishing tasks; typically called via an animation end event
-        completeRenderOpened: function() {
-          if (this.completionEventName) {
-            this.removeElementListener(this.target, this.completionEventName, 
-                'completeRenderOpened');
-          }
-          this.target.classList.toggle('core-revealed', this.opened);
+        transitionend: function() {
           if (!this.opened) {
-            this.target.classList.remove('core-closed');
             this.resetTargetDimensions();
+            if (!this.getTransition()) {
+              this.target.style.display = 'none';
+            }
           }
           this.applyFocus();
         },
@@ -274,6 +267,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           target.style.display = null;
           target.transform = target.webkitTransform = null;
           target.transition = target.webkitTransition = null;
+        },
+
+        getTransition: function() {
+          return this.meta.byId(this.transition || this.defaultTransition);
         },
 
         getFocusNode: function() {
