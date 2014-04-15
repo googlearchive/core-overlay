@@ -21,33 +21,11 @@
 			}
 
 			#dialog {
-				/*top: 72px;
-				left: 10px;*/
 				width: 500px;
 			}
 
-			#dialog.core-revealed {
-				transition: -webkit-transform 0.2s ease-in-out, opacity 0.2s ease-in;
-				-webkit-transform: scale(0.1) translateY(-500px);
-			}
-
-			#dialog.core-overlay.core-opened {
-				-webkit-transform: none;	
-			}
-
-			#confirmation.core-opened {
-				top: 100px;
-			}
-
-			#confirmation.core-closed {
-				left: 100%;
-				top: 100px;
-			}
-
 			#confirmation {
-				position: absolute;
 				left: 50%;
-				top: 0;
 				text-align: center;
 				width: 150px;
 				margin-left: -75px;
@@ -64,7 +42,7 @@
 			<div>
 				<input placeholder="say something..." autofocus oninput="somethingCheck(this)"></input><br>
 				I agree with this wholeheartedly.
-				<core-overlay id="confirmation" class="dialog">
+				<core-overlay id="confirmation" class="dialog" transition="core-transition-top">
 					Thank you.
 				</core-overlay>
 			</div><br><br>
@@ -98,7 +76,7 @@
 						box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 					}
 				</style>
-				<core-overlay id="overlay" opened="{{opened}}" autoCloseDisabled="{{autoCloseDisabled}}"></core-overlay>
+				<core-overlay id="overlay" opened="{{opened}}" autoCloseDisabled="{{autoCloseDisabled}}"  transition="core-transition-center"></core-overlay>
 				<content></content>
 			</template>
 			<script>
