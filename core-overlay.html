@@ -211,9 +211,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           'resizeHandler');
       if (this.opened) {
         // TODO(sorvell): force SD Polyfill to render
-        if (window.ShadowDOMPolyfill) {
-          this.target.offsetHeight;
-        }
+        forcePolyfillRender(this.target);
         if (!this._shouldPosition) {
           this.target.style.position = 'static';
           var computed = getComputedStyle(this.target);
@@ -235,6 +233,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     renderOpened: function() {
       var t = this.getTransition();
       if (t) {
+        // TODO(sorvell): force SD Polyfill to render
+        forcePolyfillRender(this.target);
         t.go(this.target, {opened: this.opened});
       } else {
         this.target.style.display = this.targetStyle.display;
@@ -407,6 +407,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       return this[bound];
     },
   });
+
+  function forcePolyfillRender(target) {
+    if (window.ShadowDOMPolyfill) {
+      target.offsetHeight;
+    }
+  }
 
   // TODO(sorvell): This should be an element with private state so it can
   // be independent of overlay.
