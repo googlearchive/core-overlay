@@ -12,107 +12,163 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="core-key-helper.html">
 
 <!--
+ The `core-overlay` element displays overlayed on top of other content. It starts
+ out hidden and is displayed by setting its `opened` property to true.
+ A `core-overlay's` opened state can be toggled by calling the `toggle`
+ method.
+
+ The `core-overlay` will, by default, show/hide itself when it's opened. The 
+ `target` property may be set to another element to cause that element to 
+ be shown when the overlay is opened.
+
+ It's common to want a `core-overlay` to animate to its opened
+ position. The `core-overlay` element uses a `core-transition` to handle
+ animation. The default transition is `core-transition-fade` which 
+ causes the overlay to fade in when displayed. See 
+ <a href="../core-transition/">`core-transition`</a> for more
+ information about customizing a `core-overlay's` opening animation. The
+ `backdrop` property can be set to true to show a backdrop behind the overlay
+ that will darken the rest of the window.
+ 
+ An element that should close the `core-overlay` will automatically
+ do so if it's given the `core-overlay-toggle` attribute. By default 
+ `core-overlay` will close whenever the user taps outside it or
+ presses the escape key. This behavior can be turned off via the
+ `autoCloseDisabled` property.
+ 
+    <core-overlay>
+       <h2>Dialog</h2>
+       <input placeholder="say something..." autofocus>
+       <div>I agree with this wholeheartedly.</div>
+       <button core-overlay-toggle>OK</button>
+    </core-overlay>
+
+`core-overlay` will automatically size and position itself according to the 
+following rules. If the target's style.top and style.left are unset, the 
+target will be centered. The size of the target is constrained to be no larger
+than the window dimensions. The `margin` property specifies the extra amount
+of space that should be reserved around the overlay. This can be used to ensure
+that, for example, a drop shadow is always visible around the overlay.
+
+ @group Core Elements
+ @element core-overlay
+ @homepage github.io
+ 
 /**
- * @module Core Elements
- */
-/**
- * core-overlay displays overlayed on top of other content. It starts
- * out hidden and is displayed by setting it's opened property to true.
- * A core-overlay's opened state can be toggled by calling the toggle
- * method.
- * 
- * It's common to want a core-overlay to animate to its opened
- * position. A number of helper css classes provide some basic open/close
- * animations. For example, assigning the class core-overlay-fade to a
- * core-overlay will make it fade into and out of view as it opens and
- * closes. Note, if multiple core-overlay's are opened, they should
- * stack on top of each other.
- * 
- * Styling: The size and position of a core-overlay should be setup
- * via css.
- * core-overlay is natually sized around its content. When a
- * core-overlay is opened it is shown and the 'opened' class is added
- * to it. This is typically where css transitions and animations are
- * applied. When the core-overlay is closed, the 'opened' class is
- * removed and a 'closing' class is added. Use 'closing' to customize
- * the closing animation. 
- * 
- * Classes for animating core-overlay:
- * 
- * * core-overlay-fade: fade in/out when opened/closed
- * * core-overlay-scale-slideup: open: fade in and shrink;
- * close: slide up
- * * core-overlay-shake: open: fly in and shake; close: shake and
- * fly out.
- *
- * It's common to use core-overlay to gather user input, for example
- * a login dialog. To facilitate this, core-overlay supports automatic
- * focusing of a specific element when it's opened. The element to be
- * focused should be given an autofocus attribute.
- * 
- * An element that should close the core-overlay will automatically
- * do so if it is given the overlay-toggle attribute. Please note that
- * core-overlay will close whenever the user taps outside it or
- * presses the escape key. The behavior can be turned off via the
- * autoCloseDisabled property.
- * 
- *     <div>
- *       <core-overlay></core-overlay>
- *       <h2>Dialog</h2>
- *       <input placeholder="say something..." autofocus>
- *       <div>I agree with this wholeheartedly.</div>
- *       <button overlay-toggle>OK</button>
- *     </div>
- * 
- * @class core-overlay
- */
-/**
- * Fired when the core-overlay opened property is set.
+ * Fired when the `core-overlay` opened property changes.
  * 
  * @event core-overlay-open
- * @param {Object} inDetail
- * @param {Object} inDetail.opened the opened state
+ * @param {Object} detail
+ * @param {Object} detail.opened the opened state
  */
 -->
 
-<polymer-element name="core-overlay" attributes="target opened autoCloseDisabled margin sizingTarget transition">
+<style>
+  .core-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .core-overlay-backdrop.core-opened {
+    opacity: 0.6;
+  }
+</style>
+
+<polymer-element name="core-overlay">
 <script>
 (function() {
 
   Polymer('core-overlay', {
-    
-    /**
-     * The target element.
-     *
-     * @attribute target
-     * @type Object
-     */
-    target: null,
-    
-    /**
-     * Set opened to true to show an overlay and to false to hide it.
-     * A core-overlay may be made intially opened by setting its
-     * opened attribute.
-     * @attribute opened
-     * @type boolean
-     * @default false
-     */
-    opened: false,
-    
-    /**
-     * By default an overlay will close automatically if the user
-     * taps outside it or presses the escape key. Disable this
-     * behavior by setting the autoCloseDisabled property to true.
-     * @attribute autoCloseDisabled
-     * @type boolean
-     * @default false
-     */
-    autoCloseDisabled: false,
-    margin: 0,
-    captureEventName: 'tap',
-    transition: '',
-    defaultTransition: 'core-transition-fade',
 
+    publish: {
+      /**
+       * The target element that will be shown when the overlay is 
+       * opened. If unspecified, the core-overlay itself is the target.
+       *
+       * @attribute target
+       * @type Object
+       * @default the overlay element
+       */
+      target: null,
+
+
+      /**
+       * A `core-overlay's` size is guaranteed to be 
+       * constrained to the window size. To achieve this, the sizingElement
+       * is sized with a max-height/width. By default this element is the 
+       * target element, but it can be specifically set to a specific element
+       * inside the target if that is more appropriate. This is useful, for 
+       * example, when a region inside the overlay should scroll if needed.
+       *
+       * @attribute sizingTarget
+       * @type Object
+       * @default the target element
+       */
+      sizingTarget: null,
+    
+      /**
+       * Set opened to true to show an overlay and to false to hide it.
+       * A core-overlay may be made intially opened by setting its
+       * opened attribute.
+       * @attribute opened
+       * @type boolean
+       * @default false
+       */
+      opened: false,
+
+      /**
+       * If true, the overlay has a backdrop darkening the rest of the screen.
+       * The backdrop element is attached to the document body and may be styled
+       * with the class `core-overlay-backdrop`. When opened the `core-opened`
+       * class is applied.
+       *
+       * @attribute backdrop
+       * @type boolean
+       * @default false
+       */    
+      backdrop: false,
+    
+      /**
+       * By default an overlay will close automatically if the user
+       * taps outside it or presses the escape key. Disable this
+       * behavior by setting the autoCloseDisabled property to true.
+       * @attribute autoCloseDisabled
+       * @type boolean
+       * @default false
+       */
+      autoCloseDisabled: false,
+
+      /**
+       * A `core-overlay` target's size is constrained to the window size.
+       * The margin property specifies a pixel amount around the overlay 
+       * that will be reserved. It's useful for ensuring that, for example, 
+       * a shadow displayed outside the target will always be visible.
+       *
+       * @type number
+       * @default 0
+       */
+      margin: 0,
+
+      /**
+       * The transition property specifies a string which identifies a 
+       * <a href="../core-transition/">`core-transition`</a> element that 
+       * will be used to help the overlay open and close. The default
+       * `core-transition-fade` will cause the overlay to fade in and out.
+       *
+       * @type string
+       * @default 'core-transition-fade'
+       */
+      transition: 'core-transition-fade'
+
+    },
+
+    captureEventName: 'tap',
     targetListeners: {
       'tap': 'tapHandler',
       'keydown': 'keydownHandler',
@@ -122,6 +178,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     registerCallback: function(element) {
       this.keyHelper = document.createElement('core-key-helper');
       this.meta = document.createElement('core-transition');
+      this.scrim = document.createElement('div');
+      this.scrim.className = 'core-overlay-backdrop';
     },
 
     ready: function() {
@@ -150,7 +208,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     /** 
      * Close the overlay. This is equivalent to setting the `opened` 
      * property to false.
-     * @method open
+     * @method close
      */
     close: function() {
       this.opened = false;
@@ -163,6 +221,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (this.target.tabIndex < 0) {
           this.target.tabIndex = -1;
         }
+        // record initial styling so it can be reset
         var computed = getComputedStyle(this.target);
         this.targetStyle = {
           position: computed.position === 'static' ? 'fixed' :
@@ -199,6 +258,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // tasks which must occur before opening; e.g. making the element visible
     prepareRenderOpened: function() {
       trackOverlays(this);
+      this.prepareBackdrop();
       // async so we don't auto-close immediately via a click.
       this.async(function() {
         if (!this.autoCloseDisabled) {
@@ -210,7 +270,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.enableElementListener(this.opened, window, 'resize',
           'resizeHandler');
       if (this.opened) {
-        // TODO(sorvell): force SD Polyfill to render
         forcePolyfillRender(this.target);
         if (!this._shouldPosition) {
           this.target.style.position = 'static';
@@ -229,26 +288,56 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     // tasks which cause the overlay to actually open; typically play an
     // animation
-    // TODO(sorvell): normalize event names: transitionend, animationend
     renderOpened: function() {
-      var t = this.getTransition();
-      if (t) {
+      var transition = this.getTransition();
+      if (transition) {
         // TODO(sorvell): force SD Polyfill to render
         forcePolyfillRender(this.target);
-        t.go(this.target, {opened: this.opened});
+        transition.go(this.target, {opened: this.opened});
       } else {
         this.target.style.display = this.targetStyle.display;
         this.transitionend();
       }
+      this.renderBackdropOpened();
     },
 
-    // finishing tasks; typically called via an animation end event
-    transitionend: function() {
+    // finishing tasks; typically called via a transition
+    transitionend: function(e) {
+      // make sure this is our transition event.
+      if (e && e.target !== this.target) {
+        return;
+      }
       if (!this.opened) {
         this.resetTargetDimensions();
         this.target.style.display = 'none';
+        this.completeBackdrop();
       }
       this.applyFocus();
+    },
+
+    prepareBackdrop: function() {
+      if (this.backdrop && this.opened) {
+        if (!this.scrim.parentNode) {
+          document.body.appendChild(this.scrim);
+          this.scrim.style.zIndex = currentOverlayZ() - 1;
+        }
+        trackBackdrop(this);
+      }
+    },
+
+    renderBackdropOpened: function() {
+      if (this.backdrop && getBackdrops().length < 2) {
+        this.scrim.classList.toggle('core-opened', this.opened);
+      }
+    },
+
+    completeBackdrop: function() {
+      if (this.backdrop) {
+        trackBackdrop(this);
+        if (getBackdrops().length === 0) {
+          this.scrim.parentNode.removeChild(this.scrim);
+        }
+      }
     },
 
     prepareMeasure: function(target) {
@@ -264,15 +353,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     getTransition: function() {
-      return this.meta.byId(this.transition || this.defaultTransition);
+      return this.meta.byId(this.transition);
     },
 
     getFocusNode: function() {
       return this.target.querySelector('[autofocus]') || this.target;
     },
 
-    // TODO(sorvell): nodes stay focused when they become un-focusable
-    // due to an ancestory becoming display: none; file bug.
     applyFocus: function() {
       var focusNode = this.getFocusNode();
       if (this.opened) {
@@ -320,7 +407,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     tapHandler: function(e) {
-      if (e.target && e.target.hasAttribute('overlay-toggle')) {
+      if (e.target && e.target.hasAttribute('core-overlay-toggle')) {
         this.toggle();
       } else {
         if (this.autoCloseJob) {
@@ -329,21 +416,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
     },
-
+    
+    // We use the traditional approach of capturing events on document
+    // to to determine if the overlay needs to close. However, due to 
+    // ShadowDOM event retargeting, the event target is not useful. Instead
+    // of using it, we attempt to close asynchronously and prevent the close
+    // if a tap event is immediately heard on the target.
     // TODO(sorvell): This approach will not work with modal. For
     // this we need a scrim.
     captureHandler: function(e) {
-      if (!this.autoCloseDisabled && (currentOverlay() == this) && (this 
-          != e.target) && !(this.contains(e.target))) {
+      if (!this.autoCloseDisabled && (currentOverlay() == this)) {
         this.autoCloseJob = this.job(this.autoCloseJob, function() {
-          this.opened = false;
+          this.close();
         });
       }
     },
 
     keydownHandler: function(e) {
       if (!this.autoCloseDisabled && (e.keyCode == this.keyHelper.ESCAPE_KEY)) {
-        this.opened = false;
+        this.close();
         e.stopPropagation();
       }
     },
@@ -466,6 +557,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     if (current) {
       current.applyFocus();
     }
+  }
+
+  var backdrops = [];
+  function trackBackdrop(element) {
+    if (element.opened) {
+      backdrops.push(element);
+    } else {
+      var i = backdrops.indexOf(element);
+      if (i >= 0) {
+        backdrops.splice(i, 1);
+      }
+    }
+  }
+
+  function getBackdrops() {
+    return backdrops;
   }
 })();
 </script>
