@@ -214,30 +214,21 @@ that, for example, a drop shadow is always visible around the overlay.
       this.opened = false;
     },
 
+    domReady: function() {
+      this.ensureTargetSetup();
+    },
+
     targetChanged: function(old) {
       if (this.target) {
-        var transition = this.getTransition();
         // really make sure tabIndex is set
         if (this.target.tabIndex < 0) {
           this.target.tabIndex = -1;
-        }
-        // record initial styling so it can be reset
-        var computed = getComputedStyle(this.target);
-        this.targetStyle = {
-          position: computed.position === 'static' ? 'fixed' :
-              computed.position,
-          display: computed.display
-        }
-        if (transition) {
-          transition.setup(this.target);
-        } else {
-          this.target.style.position = this.targetStyle.position;
-          this.target.style.outline = this.target.style.display = 'none';
         }
         this.addElementListenerList(this.target, this.targetListeners);
       }
       if (old) {
         this.removeElementListenerList(old, this.targetListeners);
+        var transition = this.getTransition();
         if (transition) {
           transition.teardown(old);
         } else {
@@ -247,7 +238,30 @@ that, for example, a drop shadow is always visible around the overlay.
       }
     },
 
+    // NOTE: wait to call this until we're as sure as possible that target
+    // is styled.
+    ensureTargetSetup: function() {
+      if (this.target.__overlaySetup) {
+        return;
+      }
+      this.target.__overlaySetup = true;
+      var computed = getComputedStyle(this.target);
+      this.targetStyle = {
+        position: computed.position === 'static' ? 'fixed' :
+            computed.position,
+        display: computed.display
+      }
+      var transition = this.getTransition();
+      if (transition) {
+        transition.setup(this.target);
+      } else {
+        this.target.style.position = this.targetStyle.position;
+        this.target.style.outline = this.target.style.display = 'none';
+      }
+    },
+
     openedChanged: function() {
+      this.ensureTargetSetup();
       this.prepareRenderOpened();
       // continue styling after delay so display state can change
       // without aborting transitions
