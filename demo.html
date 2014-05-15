@@ -56,7 +56,7 @@
 	<template>
 		<x-dialog id="dialog" class="dialog">
 			<!-- place all overlay styles inside the overlay target -->
-			<style>
+			<style no-shim>
 				.dialog {
 					box-sizing: border-box;
 					-moz-box-sizing: border-box;
@@ -84,7 +84,7 @@
 				I agree with this wholeheartedly.
 				<core-overlay layered id="confirmation" class="dialog" backdrop transition="core-transition-top">
 					<!-- place all overlay styles inside the overlay target -->
-					<style>
+					<style no-shim>
 						.dialog {
 							box-sizing: border-box;
 							-moz-box-sizing: border-box;

@@ -235,9 +235,7 @@ Fired when the `core-overlay`'s `opened` property changes.
           this.target.tabIndex = -1;
         }
         this.addElementListenerList(this.target, this.targetListeners);
-        if (this.isAttached) {
-          this.ensureTargetSetup();
-        }
+        this.target.style.display = 'none';
       }
       if (old) {
         this.removeElementListenerList(old, this.targetListeners);
@@ -246,8 +244,9 @@ Fired when the `core-overlay`'s `opened` property changes.
           transition.teardown(old);
         } else {
           old.style.position = null;
-          old.style.outline = old.style.display = null;
+          old.style.outline = null;
         }
+        old.style.display = null;
       }
     },
 
@@ -258,19 +257,21 @@ Fired when the `core-overlay`'s `opened` property changes.
         return;
       }
       this.target.__overlaySetup = true;
-      var computed = getComputedStyle(this.target);
-      this.targetStyle = {
-        position: computed.position === 'static' ? 'fixed' :
-            computed.position,
-        display: computed.display
-      }
+      this.target.style.display = null;
       var transition = this.getTransition();
       if (transition) {
         transition.setup(this.target);
-      } else {
-        this.target.style.position = this.targetStyle.position;
-        this.target.style.outline = this.target.style.display = 'none';
       }
+      var computed = getComputedStyle(this.target);
+      this.targetStyle = {
+        position: computed.position === 'static' ? 'fixed' :
+            computed.position
+      }
+      if (!transition) {
+        this.target.style.position = this.targetStyle.position;
+        this.target.style.outline = 'none';
+      }
+      this.target.style.display = 'none';
     },
 
     openedChanged: function() {
@@ -300,6 +301,7 @@ Fired when the `core-overlay`'s `opened` property changes.
           'resizeHandler');
 
       if (this.opened) {
+        // TODO(sorvell): force SD Polyfill to render
         forcePolyfillRender(this.target);
         if (!this._shouldPosition) {
           this.target.style.position = 'static';
@@ -309,6 +311,7 @@ Fired when the `core-overlay`'s `opened` property changes.
           this.target.style.position = this.targetStyle.position;
           this._shouldPosition = {top: t, left: l};
         }
+        this.target.style.display = null;
         // if we are showing, then take care when measuring
         this.prepareMeasure(this.target);
         this.updateTargetDimensions();
@@ -316,24 +319,18 @@ Fired when the `core-overlay`'s `opened` property changes.
 
         if (this.layered) {
           this.layer.addElement(this.target);
+          this.layer.opened = this.opened;
         }
       }
-
     },
 
     // tasks which cause the overlay to actually open; typically play an
     // animation
     renderOpened: function() {
-      if (this.layered && this.opened) {
-        this.layer.opened = this.opened;
-      }
       var transition = this.getTransition();
       if (transition) {
-        // TODO(sorvell): force SD Polyfill to render
-        forcePolyfillRender(this.target);
         transition.go(this.target, {opened: this.opened});
       } else {
-        this.target.style.display = this.targetStyle.display;
         this.transitionend();
       }
       this.renderBackdropOpened();
@@ -386,7 +383,6 @@ Fired when the `core-overlay`'s `opened` property changes.
     },
 
     prepareMeasure: function(target) {
-      target.style.display = 'block';
       target.style.transition = target.style.webkitTransition = 'none';
       target.style.transform = target.style.webkitTransform = 'none';
     },
@@ -394,7 +390,6 @@ Fired when the `core-overlay`'s `opened` property changes.
     finishMeasure: function(target) {
       target.style.transform = target.style.webkitTransform = null;
       target.style.transition = target.style.webkitTransition = null;
-      target.style.display = null;
     },
 
     getTransition: function() {
