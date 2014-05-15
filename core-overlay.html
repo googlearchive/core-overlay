@@ -279,7 +279,12 @@ Fired when the `core-overlay`'s `opened` property changes.
       this.prepareRenderOpened();
       // continue styling after delay so display state can change
       // without aborting transitions
-      this.async('renderOpened');
+      // note: we wait a full frame so that transition changes executed
+      // during measuring do not cause transition
+      this.async(function() {
+        this.target.style.display = null;
+        this.async('renderOpened');
+      });
       this.fire('core-overlay-open', this.opened);
     },
 
@@ -292,7 +297,6 @@ Fired when the `core-overlay`'s `opened` property changes.
       // async so we don't auto-close immediately via a click.
       this.async(function() {
         if (!this.autoCloseDisabled) {
-          // TODO(sorvell): how does this work with retargeting?
           this.enableElementListener(this.opened, document,
               this.captureEventName, 'captureHandler', true);
         }
@@ -311,12 +315,10 @@ Fired when the `core-overlay`'s `opened` property changes.
           this.target.style.position = this.targetStyle.position;
           this._shouldPosition = {top: t, left: l};
         }
-        this.target.style.display = null;
         // if we are showing, then take care when measuring
         this.prepareMeasure(this.target);
         this.updateTargetDimensions();
         this.finishMeasure(this.target);
-
         if (this.layered) {
           this.layer.addElement(this.target);
           this.layer.opened = this.opened;
@@ -385,9 +387,11 @@ Fired when the `core-overlay`'s `opened` property changes.
     prepareMeasure: function(target) {
       target.style.transition = target.style.webkitTransition = 'none';
       target.style.transform = target.style.webkitTransform = 'none';
+      target.style.display = null;
     },
 
     finishMeasure: function(target) {
+      target.style.display = 'none';
       target.style.transform = target.style.webkitTransform = null;
       target.style.transition = target.style.webkitTransition = null;
     },
