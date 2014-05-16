@@ -32,8 +32,11 @@ information about customizing a `core-overlay's` opening animation. The
 that will darken the rest of the window.
 
 An element that should close the `core-overlay` will automatically
-do so if it's given the `core-overlay-toggle` attribute. By default 
-`core-overlay` will close whenever the user taps outside it or
+do so if it's given the `core-overlay-toggle` attribute. This attribute
+can be customized with the `closeAttribute` property. You can also use
+`closeSelector` if more general matching is needed.
+
+By default  `core-overlay` will close whenever the user taps outside it or
 presses the escape key. This behavior can be turned off via the
 `autoCloseDisabled` property.
 
@@ -154,11 +157,34 @@ Fired when the `core-overlay`'s `opened` property changes.
       autoCloseDisabled: false,
 
       /**
+       * This property specifies an attribute on elements that should
+       * close the overlay on tap. Should not set `closeSelector` if this
+       * is set.
+       *
+       * @attribute closeAttribute
+       * @type string
+       * @default "core-overlay-toggle"
+       */
+      closeAttribute: 'core-overlay-toggle',
+
+      /**
+       * This property specifies a selector matching elements that should
+       * close the overlay on tap. Should not set `closeAttribute` if this
+       * is set.
+       *
+       * @attribute closeSelector
+       * @type string
+       * @default ""
+       */
+      closeSelector: '',
+
+      /**
        * A `core-overlay` target's size is constrained to the window size.
        * The `margin` property specifies a pixel amount around the overlay 
        * that will be reserved. It's useful for ensuring that, for example, 
        * a shadow displayed outside the target will always be visible.
        *
+       * @attribute margin
        * @type number
        * @default 0
        */
@@ -170,6 +196,7 @@ Fired when the `core-overlay`'s `opened` property changes.
        * will be used to help the overlay open and close. The default
        * `core-transition-fade` will cause the overlay to fade in and out.
        *
+       * @attribute transition
        * @type string
        * @default 'core-transition-fade'
        */
@@ -460,7 +487,10 @@ Fired when the `core-overlay`'s `opened` property changes.
     },
 
     tapHandler: function(e) {
-      if (e.target && e.target.hasAttribute('core-overlay-toggle')) {
+      // closeSelector takes precedence since closeAttribute has a default non-null value.
+      if (e.target &&
+          (this.closeSelector && e.target.matches(this.closeSelector)) ||
+          (this.closeAttribute && e.target.hasAttribute(this.closeAttribute))) {
         this.toggle();
       } else {
         if (this.autoCloseJob) {
