@@ -302,6 +302,7 @@ Fired when the `core-overlay`'s `opened` property changes.
     },
 
     openedChanged: function() {
+      this.transitioning = true;
       this.ensureTargetSetup();
       this.prepareRenderOpened();
       // continue styling after delay so display state can change
@@ -371,6 +372,7 @@ Fired when the `core-overlay`'s `opened` property changes.
       if (e && e.target !== this.target) {
         return;
       }
+      this.transitioning = false;
       if (!this.opened) {
         this.resetTargetDimensions();
         this.target.style.display = 'none';
@@ -437,7 +439,11 @@ Fired when the `core-overlay`'s `opened` property changes.
         focusNode.focus();
       } else {
         focusNode.blur();
-        focusOverlay();
+        if (currentOverlay() == this) {
+          console.warn('Current core-overlay is attempting to focus itself as next! (bug)');
+        } else {
+          focusOverlay();
+        }
       }
     },
 
@@ -637,7 +643,15 @@ Fired when the `core-overlay`'s `opened` property changes.
   
   function focusOverlay() {
     var current = currentOverlay();
-    if (current) {
+    // We have to be careful to focus the next overlay _after_ any current
+    // transitions are complete (due to the state being toggled prior to the
+    // transition). Otherwise, we risk infinite recursion when a transitioning
+    // (closed) overlay becomes the current overlay.
+    //
+    // NOTE: We make the assumption that any overlay that completes a transition
+    // will call into focusOverlay to kick the process back off. Currently:
+    // transitionend -> applyFocus -> focusOverlay.
+    if (current && !current.transitioning) {
       current.applyFocus();
     }
   }
