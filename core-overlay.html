@@ -270,10 +270,10 @@ Fired when the `core-overlay`'s `opened` property changes.
         if (transition) {
           transition.teardown(old);
         } else {
-          old.style.position = null;
-          old.style.outline = null;
+          old.style.position = '';
+          old.style.outline = '';
         }
-        old.style.display = null;
+        old.style.display = '';
       }
     },
 
@@ -284,7 +284,7 @@ Fired when the `core-overlay`'s `opened` property changes.
         return;
       }
       this.target.__overlaySetup = true;
-      this.target.style.display = null;
+      this.target.style.display = '';
       var transition = this.getTransition();
       if (transition) {
         transition.setup(this.target);
@@ -309,7 +309,7 @@ Fired when the `core-overlay`'s `opened` property changes.
       // note: we wait a full frame so that transition changes executed
       // during measuring do not cause transition
       this.async(function() {
-        this.target.style.display = null;
+        this.target.style.display = '';
         this.async('renderOpened');
       });
       this.fire('core-overlay-open', this.opened);
@@ -414,13 +414,13 @@ Fired when the `core-overlay`'s `opened` property changes.
     prepareMeasure: function(target) {
       target.style.transition = target.style.webkitTransition = 'none';
       target.style.transform = target.style.webkitTransform = 'none';
-      target.style.display = null;
+      target.style.display = '';
     },
 
     finishMeasure: function(target) {
       target.style.display = 'none';
-      target.style.transform = target.style.webkitTransform = null;
-      target.style.transition = target.style.webkitTransition = null;
+      target.style.transform = target.style.webkitTransform = '';
+      target.style.transition = target.style.webkitTransition = '';
     },
 
     getTransition: function() {
@@ -480,9 +480,9 @@ Fired when the `core-overlay`'s `opened` property changes.
     },
 
     resetTargetDimensions: function() {
-      this.target.style.top = this.target.style.left = null;
-      this.target.style.right = this.target.style.bottom = null;
-      this.target.style.width = this.target.style.height = null;
+      this.target.style.top = this.target.style.left = '';
+      this.target.style.right = this.target.style.bottom = '';
+      this.target.style.width = this.target.style.height = '';
       this._shouldPosition = null;
     },
 
@@ -605,7 +605,7 @@ Fired when the `core-overlay`'s `opened` property changes.
     var i = overlays.indexOf(overlay);
     if (i >= 0) {
       overlays.splice(i, 1);
-      setZ(overlay, null);
+      setZ(overlay, '');
     }
   }
   
