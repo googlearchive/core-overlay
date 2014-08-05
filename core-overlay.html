@@ -562,14 +562,14 @@ Fired when the `core-overlay`'s `opened` property changes.
     addElementListener: function(node, event, methodName, capture) {
       var fn = this._makeBoundListener(methodName);
       if (node && fn) {
-        node.addEventListener(event, fn, capture);
+        Polymer.addEventListener(node, event, fn, capture);
       }
     },
 
     removeElementListener: function(node, event, methodName, capture) {
       var fn = this._makeBoundListener(methodName);
       if (node && fn) {
-        node.removeEventListener(event, fn, capture);
+        Polymer.removeEventListener(node, event, fn, capture);
       }
     },
 
