@@ -166,6 +166,16 @@ Fired when the `core-overlay` has completely closed.
       autoCloseDisabled: false,
 
       /**
+       * By default an overlay will focus its target or an element inside
+       * it with the `autoFocus` attribute. Disable this
+       * behavior by setting the `autoFocusDisabled` property to true.
+       * @attribute autoFocusDisabled
+       * @type boolean
+       * @default false
+       */
+       autoFocusDisabled: false,
+
+      /**
        * This property specifies an attribute on elements that should
        * close the overlay on tap. Should not set `closeSelector` if this
        * is set.
@@ -272,6 +282,7 @@ Fired when the `core-overlay` has completely closed.
         }
         this.addElementListenerList(this.target, this.targetListeners);
         this.target.style.display = 'none';
+        this.target.__overlaySetup = false;
       }
       if (old) {
         this.removeElementListenerList(old, this.targetListeners);
@@ -284,6 +295,16 @@ Fired when the `core-overlay` has completely closed.
         }
         old.style.display = '';
       }
+    },
+
+    transitionChanged: function(old) {
+      if (!this.target) {
+        return;
+      }
+      if (old) {
+        this.getTransition(old).teardown(this.target);
+      }
+      this.target.__overlaySetup = false;
     },
 
     // NOTE: wait to call this until we're as sure as possible that target
@@ -302,7 +323,7 @@ Fired when the `core-overlay` has completely closed.
       this.targetStyle = {
         position: computed.position === 'static' ? 'fixed' :
             computed.position
-      }
+      };
       if (!transition) {
         this.target.style.position = this.targetStyle.position;
         this.target.style.outline = 'none';
@@ -436,8 +457,8 @@ Fired when the `core-overlay` has completely closed.
       target.style.transition = target.style.webkitTransition = '';
     },
 
-    getTransition: function() {
-      return this.meta.byId(this.transition);
+    getTransition: function(name) {
+      return this.meta.byId(name || this.transition);
     },
 
     getFocusNode: function() {
@@ -447,7 +468,9 @@ Fired when the `core-overlay` has completely closed.
     applyFocus: function() {
       var focusNode = this.getFocusNode();
       if (this.opened) {
-        focusNode.focus();
+        if (!this.autoFocusDisabled) {
+          focusNode.focus();
+        }
       } else {
         focusNode.blur();
         if (currentOverlay() == this) {
