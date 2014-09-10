@@ -333,6 +333,8 @@ in order to position an overlay dynamically.
       };
       if (!transition) {
         this.target.style.outline = 'none';
+        // TODO(sorvell): needed for bc for now.
+        this.target.style.position = this.targetStyle.position;
       }
       this.target.style.display = 'none';
     },
