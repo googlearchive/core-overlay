@@ -325,17 +325,18 @@ in order to position an overlay dynamically.
       if (transition) {
         transition.setup(this.target);
       }
-      // TODO(sorvell): bc 
       var computed = getComputedStyle(this.target);
+      var style = this.target.style;
+      var isStatic = computed.position === 'static';
+      var defaultPosition = 'fixed';
+      // TODO(sorvell): bc 
       this.targetStyle = {
-        position: computed.position === 'static' ? 'fixed' :
-            computed.position
+        position: isStatic ? defaultPosition : computed.position
       };
-      if (!transition) {
-        this.target.style.outline = 'none';
-        // TODO(sorvell): needed for bc for now.
-        this.target.style.position = this.targetStyle.position;
+      if (isStatic) {
+        style.position = 'fixed';
       }
+      this.target.style.outline = 'none';
       this.target.style.display = 'none';
     },
 
