@@ -371,12 +371,12 @@ object like this: `{v: 'top', h: 'right'}`.
       if (this.opened) {
         // force layout so SD Polyfill renders
         this.target.offsetHeight;
-        // if we are showing, then take care when measuring
-        this.prepareMeasure();
-        this.measure();
+        this.discoverDimensions();
+        // if we are showing, then take care when positioning
+        this.preparePositioning();
         this.positionTarget();
         this.updateTargetDimensions();
-        this.finishMeasure();
+        this.finishPositioning();
         if (this.layered) {
           this.layer.addElement(this.target);
           this.layer.opened = this.opened;
@@ -445,13 +445,13 @@ object like this: `{v: 'top', h: 'right'}`.
       }
     },
 
-    prepareMeasure: function() {
+    preparePositioning: function() {
       this.target.style.transition = this.target.style.webkitTransition = 'none';
       this.target.style.transform = this.target.style.webkitTransform = 'none';
       this.target.style.display = '';
     },
 
-    measure: function() {
+    discoverDimensions: function() {
       if (this.dimensions) {
         return;
       }
@@ -476,16 +476,9 @@ object like this: `{v: 'top', h: 'right'}`.
           left: parseInt(target.marginLeft) || 0
         }
       };
-      // size at top/left if unset
-      if (!this.dimensions.position.v) {
-        this.target.style.top = '0px';
-      }
-      if (!this.dimensions.position.h) {
-        this.target.style.left = '0px';
-      }
     },
 
-    finishMeasure: function(target) {
+    finishPositioning: function(target) {
       this.target.style.display = 'none';
       this.target.style.transform = this.target.style.webkitTransform = '';
       // force layout to avoid application of transform
