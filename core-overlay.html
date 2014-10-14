@@ -248,7 +248,7 @@ object like this: `{v: 'top', h: 'right'}`.
     ready: function() {
       this.target = this.target || this;
       // flush to ensure styles are installed before paint
-      Platform.flush();
+      Polymer.flush();
     },
 
     /** 
