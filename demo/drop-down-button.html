@@ -1,0 +1,86 @@
+<!--
+    @license
+    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+
+<link rel="import" href="../../core-icon/core-icon.html">
+<link rel="import" href="../../core-icons/core-icons.html">
+
+<dom-module id="drop-down-button">
+
+  <style>
+
+    :host {
+      font: inherit;
+      background: inherit;
+      padding: 0;
+      border-radius: 2px;
+      border: 1px solid #ccc;
+      width: 200px;
+      text-align: start;
+    }
+
+    :host > * {
+      pointer-events: none;
+    }
+
+    :host > :first-child {
+      padding-left: 16px;
+    }
+
+    :host > *:last-child {
+      border-left: 1px solid #ccc;
+    }
+
+  </style>
+
+  <template>
+
+    <div class="flex"><content></content></div>
+    <!-- <div><core-icon icon="{{icon}}"></core-icon></div> -->
+
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'drop-down-button',
+
+    extends: 'button',
+
+    properties: {
+      icon: {
+        type: String,
+        value: 'arrow-drop-down'
+      }
+    },
+
+    openedAttribute: 'data-dialog-opened',
+
+    created: function() {
+      this.classList.add('layout', 'horizontal', 'center');
+    },
+
+    attributeChanged: function(name, type) {
+      if (name === this.openedAttribute) {
+        if (this.hasAttribute(this.openedAttribute)) {
+          this.icon = 'arrow-drop-up';
+        } else {
+          this.icon = 'arrow-drop-down';
+        }
+      }
+    }
+
+  });
+
+</script>

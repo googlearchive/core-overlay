@@ -1,0 +1,577 @@
+<!--
+    @license
+    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <title>overlay-position-helper tests</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents.js"></script>
+
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="elements/overlay-position-helper-impl.html">
+
+    <style>
+      body {
+        margin: 0;
+        height: 100%;
+      }
+
+      overlay-position-helper-impl {
+        padding: 10px;
+        position: fixed;
+      }
+
+      .scrolling {
+        overflow: auto;
+      }
+
+      .sized-x {
+        width: 200px;
+      }
+
+      .sized-y {
+        height: 200px;
+      }
+
+      .positioned-left {
+        left: 100px;
+      }
+
+      .positioned-right {
+        right: 100px;
+      }
+
+      .positioned-top {
+        top: 100px;
+      }
+
+      .positioned-bottom {
+        bottom: 100px;
+      }
+
+      .with-max-width {
+        max-width: 500px;
+      }
+
+      .with-max-height {
+        max-height: 500px;
+      }
+
+      .with-margin {
+        margin: 20px;
+      }
+    </style>
+
+  </head>
+  <body onclick="clickHandler(event);">
+
+    <test-fixture id="sized-xy">
+      <template>
+        <overlay-position-helper-impl class="sized-x sized-y">
+          Sized (x/y) overlay, auto center/center
+        </overlay-position-helper-impl>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="sized-x">
+      <template>
+        <overlay-position-helper-impl class="sized-x">
+          Sized (x) overlay, auto center/center
+        </overlay-position-helper-impl>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="positioned-xy">
+      <template>
+        <overlay-position-helper-impl class="sized-x positioned-left positioned-top">
+          Sized (x/y) overlay, positioned/positioned
+        </overlay-position-helper-impl>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="inline-positioned-xy">
+      <template>
+        <overlay-position-helper-impl class="sized-x sized-y" style="right:100px;bottom:100px;">
+          Sized (x/y) overlay, positioned/positioned
+        </overlay-position-helper-impl>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="sectioned">
+      <template>
+        <overlay-position-helper-impl class="sized-x">
+          <div>
+            Sized (x) overlay, auto center/center with scrolling section
+          </div>
+          <div class="internal"></div>
+        </overlay-position-helper-impl>
+      </template>
+    </test-fixture>
+
+    <template id="ipsum">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </template>
+
+    <script>
+
+      suite('auto centered and sized overlay', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-xy');
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: null,
+              h: null,
+              css: 'fixed'
+            },
+            size: {
+              v: false,
+              h: false
+            },
+            margin: {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0
+            }
+          });
+        });
+
+        test('overlay is centered in viewport', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5);
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5);
+        });
+
+      });
+
+      suite('css positioned, sized overlay', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('positioned-xy');
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          console.log(overlay.dimensions);
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: 'top',
+              h: 'left',
+              css: 'fixed'
+            },
+            size: {
+              v: false,
+              h: false
+            },
+            margin: {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0
+            }
+          });
+        });
+
+        test('overlay is positioned by css', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.equal(rect.left, 100);
+          assert.equal(rect.top, 100);
+        });
+      });
+
+      suite('manually positioned, sized overlay', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('inline-positioned-xy');
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          console.log(overlay.dimensions);
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: 'bottom',
+              h: 'right',
+              css: 'fixed'
+            },
+            size: {
+              v: false,
+              h: false
+            },
+            margin: {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0
+            }
+          });
+        });
+
+        test('overlay is positioned manually', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.equal(rect.top, window.innerHeight - rect.height - 100);
+          assert.equal(rect.left, window.innerWidth - rect.width - 100);
+        });
+      });
+
+      /////////////////////////////////////////////////////////////////////////
+      // overlays with margin
+      ////////////////////////////////////////////////////////////////////////
+
+      suite('auto centered and sized overlay, with margin', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-xy');
+          overlay.classList.add('with-margin');
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: null,
+              h: null,
+              css: 'fixed'
+            },
+            size: {
+              v: false,
+              h: false
+            },
+            margin: {
+              top: 20,
+              right: 20,
+              bottom: 20,
+              left: 20
+            }
+          });
+        });
+
+        test('overlay is centered in viewport', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5);
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5);
+        });
+
+      });
+
+      suite('css positioned, sized overlay with margin', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('positioned-xy');
+          overlay.classList.add('with-margin');
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          console.log(overlay.dimensions);
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: 'top',
+              h: 'left',
+              css: 'fixed'
+            },
+            size: {
+              v: false,
+              h: false
+            },
+            margin: {
+              top: 20,
+              right: 20,
+              bottom: 20,
+              left: 20
+            }
+          });
+        });
+
+        test('overlay is positioned by css', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.equal(rect.left, 120);
+          assert.equal(rect.top, 120);
+        });
+      });
+
+      suite('manually positioned, sized overlay with margin', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('inline-positioned-xy');
+          overlay.classList.add('with-margin');
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: 'bottom',
+              h: 'right',
+              css: 'fixed'
+            },
+            size: {
+              v: false,
+              h: false
+            },
+            margin: {
+              top: 20,
+              right: 20,
+              bottom: 20,
+              left: 20
+            }
+          });
+        });
+
+        test('overlay is positioned manually', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.equal(rect.top, window.innerHeight - rect.height - 100 - 20);
+          assert.equal(rect.left, window.innerWidth - rect.width - 100 - 20);
+        });
+      });
+
+      /////////////////////////////////////////////////////////////////////////
+      // scrolling overlays
+      ////////////////////////////////////////////////////////////////////////
+
+      function makeScrolling(overlay) {
+        overlay.classList.add('scrolling');
+        var template = document.getElementById('ipsum');
+        for (var i = 0; i < 20; i++) {
+          overlay.appendChild(template.content.cloneNode(true));
+        }
+      }
+
+      suite('scrolling, auto centered overlay', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-x');
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is centered in viewport', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5);
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5);
+        });
+
+        test('overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+      });
+
+      suite('scrolling, auto centered overlay with max height', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-x');
+          overlay.classList.add('with-max-height');
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('discoverDimensions return correct data', function() {
+          assert.deepEqual(overlay.dimensions, {
+            position: {
+              v: null,
+              h: null,
+              css: 'fixed'
+            },
+            size: {
+              v: true,
+              h: false
+            },
+            margin: {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0
+            }
+          });
+        });
+
+        test('overlay is centered in viewport', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5);
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5);
+        });
+
+        test('overlay is constrained to max height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= 500, 'height is less than or equal to max-height');
+        });
+      });
+
+      suite('scrolling, overlay positioned with css (top, left)', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('positioned-xy');
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100, 'height is less than or equal to viewport height');
+        });
+      });
+
+      suite('scrolling, overlay positioned with css (bottom, right)', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-x');
+          overlay.classList.add('positioned-bottom');
+          overlay.classList.add('positioned-right');
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100, 'height is less than or equal to viewport height');
+        });
+      });
+
+      /////////////////////////////////////////////////////////////////////////
+      // scrolling overlays with margin
+      ////////////////////////////////////////////////////////////////////////
+
+      suite('scrolling, auto centered overlay with margin', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-x');
+          overlay.classList.add('with-margin');
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is centered in viewport', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5);
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5);
+        });
+
+        test('overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 20 * 2, 'height is less than or equal to viewport height');
+        });
+      });
+
+      suite('scrolling, overlay positioned with css (top, left) with margin', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('positioned-xy');
+          overlay.classList.add('with-margin');
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100 - 20 * 2, 'height is less than or equal to viewport height');
+        });
+      });
+
+      suite('scrolling, overlay positioned with css (bottom, right) with margin', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sized-x');
+          overlay.classList.add('positioned-bottom');
+          overlay.classList.add('positioned-right');
+          overlay.classList.add('with-margin')
+
+          makeScrolling(overlay);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100 - 20 * 2, 'height is less than or equal to viewport height');
+        });
+      });
+
+      /////////////////////////////////////////////////////////////////////////
+      // sectioned scrolling overlays
+      ////////////////////////////////////////////////////////////////////////
+
+      suite('sectioned scrolling overlay', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('sectioned');
+
+          var internal = overlay.querySelector('.internal');
+          overlay.sizingTarget = internal;
+
+          makeScrolling(internal);
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('sectioned scrolling overlay is constrained to viewport height', function() {
+          var rect = overlay.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>
