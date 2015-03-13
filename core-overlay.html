@@ -206,6 +206,20 @@ Fired when the user cancels the `core-overlay`.
         },
 
         /**
+         * If true, the overlay is reparented to document.body and given so it can be guaranteed to
+         * display on top.
+         * TODO: write docs about caveats
+         *
+         * @attribute alwaysOnTop
+         * @type boolean
+         * @default false
+         */
+        alwaysOnTop: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * If true, the ESC key does not cancel the overlay.
          *
          * @attribute noCancelOnEscKey
@@ -236,6 +250,8 @@ Fired when the user cancels the `core-overlay`.
       },
 
       registered: function() {
+        // All instances of core-overlay share these elements
+        this._layer = document.createElement('core-overlay-layer');
         this._backdrop = document.createElement('div');
         this._backdrop.className = 'core-overlay-backdrop';
       },
@@ -354,6 +370,12 @@ Fired when the user cancels the `core-overlay`.
           this.positionTarget();
           this.updateTargetDimensions();
           this.finishPositioning();
+
+          // reparent the element if always on top
+          if (this.alwaysOnTop) {
+            this._layer.addElement(this);
+            this._layer.opened = this.opened;
+          }
         }
       },
 
@@ -382,6 +404,14 @@ Fired when the user cancels the `core-overlay`.
           this.style.display = 'none';
           this.completeBackdrop();
           manager.removeOverlay(this);
+
+          // remove the element from this._layer if always on top
+          if (this.alwaysOnTop) {
+            if (!currentOverlay()) {
+              this._layer.opened = this.opened;
+            }
+            this._layer.removeElement(this.target);
+          }
         }
 
         this.applyFocus();
