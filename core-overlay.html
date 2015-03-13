@@ -205,11 +205,25 @@ Fired when the user cancels the `core-overlay`.
           value: false
         },
 
+        /**
+         * If true, the ESC key does not cancel the overlay.
+         *
+         * @attribute noCancelOnEscKey
+         * @type boolean
+         * @default false
+         */
         noCancelOnEscKey: {
           type: Boolean,
           value: false
         },
 
+        /**
+         * If true, clicking outside the overlay does not cancel the overlay.
+         *
+         * @attribute noCancelOnOutsideClick
+         * @type boolean
+         * @default false
+         */
         noCancelOnOutsideClick: {
           type: Boolean,
           value: false
@@ -239,6 +253,7 @@ Fired when the user cancels the `core-overlay`.
 
       /**
        * Toggle the opened state of the overlay.
+       *
        * @method toggle
        */
       toggle: function() {
@@ -248,6 +263,7 @@ Fired when the user cancels the `core-overlay`.
       /**
        * Open the overlay. This is equivalent to setting the `opened`
        * property to true.
+       *
        * @method open
        */
       open: function() {
@@ -257,6 +273,7 @@ Fired when the user cancels the `core-overlay`.
       /**
        * Close the overlay. This is equivalent to setting the `opened`
        * property to false.
+       *
        * @method close
        */
       close: function() {
@@ -265,6 +282,7 @@ Fired when the user cancels the `core-overlay`.
 
       /**
        * Cancels the overlay.
+       *
        * @method cancel
        */
       cancel: function() {
@@ -365,7 +383,10 @@ Fired when the user cancels the `core-overlay`.
           this.completeBackdrop();
           manager.removeOverlay(this);
         }
+
         this.applyFocus();
+
+        // complete all tasks before firing -completed event
         this.fire('core-overlay-' + (this.opened ? 'open' : 'close') +
             '-completed');
       },
