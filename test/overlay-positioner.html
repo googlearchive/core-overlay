@@ -555,7 +555,7 @@
         setup(function() {
           overlay = fixture('sectioned');
 
-          var internal = overlay.querySelector('.internal');
+          var internal = Polymer.dom(overlay).querySelector('.internal');
           overlay.sizingTarget = internal;
 
           makeScrolling(internal);

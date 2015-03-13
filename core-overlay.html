@@ -373,7 +373,7 @@ Fired when the user cancels the `core-overlay`.
       prepareBackdrop: function() {
         if (this.backdrop && this.opened) {
           if (!this._backdrop.parentNode) {
-            document.body.appendChild(this._backdrop);
+            Polymer.dom(document.body).appendChild(this._backdrop);
             this._backdrop.style.zIndex = manager.currentOverlayZ() - 1;
           }
           manager.trackBackdrop(this);
@@ -390,7 +390,7 @@ Fired when the user cancels the `core-overlay`.
         if (this.backdrop) {
           manager.trackBackdrop(this);
           if (manager.getBackdrops().length === 0 && this._backdrop.parentNode) {
-            this._backdrop.parentNode.removeChild(this._backdrop);
+            Polymer.dom(this._backdrop.parentNode).removeChild(this._backdrop);
           }
         }
       },
@@ -410,7 +410,7 @@ Fired when the user cancels the `core-overlay`.
       },
 
       getFocusNode: function() {
-        return this.querySelector('[autofocus]') || this;
+        return Polymer.dom(this).querySelector('[autofocus]') || this;
       },
 
       applyFocus: function() {
