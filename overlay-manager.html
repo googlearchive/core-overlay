@@ -79,6 +79,8 @@
     }
 
     function trackBackdrop(element) {
+      // backdrops contains the overlays with a backdrop that are currently
+      // visible
       if (element.opened) {
         backdrops.push(element);
       } else {

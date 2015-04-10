@@ -2,10 +2,7 @@
   "name": "core-overlay",
   "private": true,
   "main": [
-    "core-overlay.html",
-    "constrain-size.html",
-    "events-helper.html",
-    "overlay-manager.html"
+    "core-overlay.html"
   ],
   "authors": "The Polymer Authors",
   "repository": {
@@ -13,7 +10,9 @@
     "url": "git://github.com/Polymer/core-overlay.git"
   },
   "dependencies": {
-    "polymer": "Polymer/polymer#0.8-preview"
+    "polymer": "Polymer/polymer#0.8-preview",
+    "layout": "Polymer/layout",
+    "paper-styles": "PolymerLabs/paper-styles"
   },
   "devDependencies": {
     "core-icon": "Polymer/core-icon#0.8-preview",

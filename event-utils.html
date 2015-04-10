@@ -57,14 +57,14 @@
     /**
      * Toggles an event listener on a node.
      *
-     * @method enableElementListener
+     * @method toggleElementListener
      * @param {Boolean} enable
      * @param {Node} node
      * @param {String} event
      * @param {String} methodName
      * @param {Boolean} capture
      */
-    enableElementListener: function(enable, node, event, methodName, capture) {
+    toggleElementListener: function(enable, node, event, methodName, capture) {
       if (enable) {
         this.addElementListener(node, event, methodName, capture);
       } else {

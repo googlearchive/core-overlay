@@ -9,7 +9,9 @@
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/x-theme.html">
 
+<link rel="import" href="core-overlay-backdrop.html">
 <link rel="import" href="event-utils.html">
 <link rel="import" href="overlay-manager.html">
 <link rel="import" href="overlay-positioner.html">
@@ -106,23 +108,14 @@ Fired when the user cancels the `core-overlay`.
 @param {Object} detail.target the overlay target
 -->
 
-<style>
+<style is="x-style">
 
-  /* backdrop styles are global */
-  /* FIXME: encapsulate in an element */
-  .core-overlay-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: black;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
+  /* FIXME must define the variable in a different scope than the reference */
+  /* https://github.com/Polymer/polymer/issues/1406 */
 
-  .core-overlay-backdrop.core-opened {
-    opacity: 0.6;
+  * {
+    --core-overlay-background-color: var(--primary-background-color);
+    --core-overlay-color: var(--primary-text-color);
   }
 
 </style>
@@ -133,7 +126,10 @@ Fired when the user cancels the `core-overlay`.
 
     :host {
       position: fixed;
-      background: #fff;
+      background: var(--core-overlay-background-color);
+      color: var(--core-overlay-color);
+
+      mixin(--core-overlay);
     }
 
   </style>
@@ -142,355 +138,399 @@ Fired when the user cancels the `core-overlay`.
 
 <script>
 
-  (function() {
+(function() {
 
-    var manager = Polymer.Core.Overlay.Manager;
+  var manager = Polymer.Core.Overlay.Manager;
 
-    Polymer({
+  Polymer({
 
-      is: 'core-overlay',
+    is: 'core-overlay',
 
-      mixins: [
-        Polymer.Core.Overlay.Positioner,
-        Polymer.Core.EventUtils
-      ],
+    enableCustomStyleProperties: true,
 
-      properties: {
+    mixins: [
+      Polymer.Core.Overlay.Positioner,
+      Polymer.Core.EventUtils
+    ],
 
-        /**
-         * A `core-overlay`'s size is guaranteed to be
-         * constrained to the window size. To achieve this, the sizingElement
-         * is sized with a max-height/width. By default this element is the
-         * target element, but it can be specifically set to a specific element
-         * inside the target if that is more appropriate. This is useful, for
-         * example, when a region inside the overlay should scroll if needed.
-         *
-         * @attribute sizingTarget
-         * @type Object
-         * @default this
-         */
-        sizingTarget: {
-          type: Object,
-          value: function() {
-            return this;
-          }
-        },
-
-        /**
-         * Set opened to true to show an overlay and to false to hide it.
-         * A `core-overlay` may be made initially opened by setting its
-         * `opened` attribute.
-         * @attribute opened
-         * @type boolean
-         * @default false
-         */
-        opened: {
-          type: Boolean,
-          value: false,
-          observer: 'openedChanged'
-        },
-
-        /**
-         * If true, the overlay has a backdrop darkening the rest of the screen.
-         * The backdrop element is attached to the document body and may be styled
-         * with the class `core-overlay-backdrop`. When opened the `core-opened`
-         * class is applied.
-         *
-         * @attribute backdrop
-         * @type boolean
-         * @default false
-         */
-        backdrop: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * If true, the ESC key does not cancel the overlay.
-         *
-         * @attribute noCancelOnEscKey
-         * @type boolean
-         * @default false
-         */
-        noCancelOnEscKey: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * If true, clicking outside the overlay does not cancel the overlay.
-         *
-         * @attribute noCancelOnOutsideClick
-         * @type boolean
-         * @default false
-         */
-        noCancelOnOutsideClick: {
-          type: Boolean,
-          value: false
-        }
-
-      },
-
-      get backdropElement() {
-        return this._backdrop;
-      },
-
-      registered: function() {
-        this._backdrop = document.createElement('div');
-        this._backdrop.className = 'core-overlay-backdrop';
-      },
-
-      ready: function() {
-        this.addElementListener(this, 'click', 'onClick');
-        this.ensureTargetSetup();
-      },
-
-      detached: function() {
-        this.opened = false;
-        this.completeBackdrop();
-        manager.removeOverlay(this);
-      },
+    properties: {
 
       /**
-       * Toggle the opened state of the overlay.
+       * A `core-overlay`'s size is guaranteed to be
+       * constrained to the window size. To achieve this, the sizingElement
+       * is sized with a max-height/width. By default this element is the
+       * target element, but it can be specifically set to a specific element
+       * inside the target if that is more appropriate. This is useful, for
+       * example, when a region inside the overlay should scroll if needed.
        *
-       * @method toggle
+       * @attribute sizingTarget
+       * @type Object
+       * @default this
        */
-      toggle: function() {
-        this.opened = !this.opened;
+      sizingTarget: {
+        type: Object,
+        value: function() {
+          return this;
+        }
       },
 
       /**
-       * Open the overlay. This is equivalent to setting the `opened`
-       * property to true.
+       * Set opened to true to show an overlay and to false to hide it.
+       * A `core-overlay` may be made initially opened by setting its
+       * `opened` attribute.
+       * @attribute opened
+       * @type boolean
+       * @default false
+       */
+      opened: {
+        type: Boolean,
+        value: false,
+        observer: 'openedChanged'
+      },
+
+      /**
+       * If true, the overlay has a backdrop darkening the rest of the screen.
+       * The backdrop element is attached to the document body and may be styled
+       * with the class `core-overlay-backdrop`. When opened the `core-opened`
+       * class is applied.
        *
-       * @method open
+       * @attribute backdrop
+       * @type boolean
+       * @default false
        */
-      open: function() {
-        this.opened = true;
+      withBackdrop: {
+        type: Boolean,
+        value: false
       },
 
       /**
-       * Close the overlay. This is equivalent to setting the `opened`
-       * property to false.
+       * If true, the ESC key does not cancel the overlay.
        *
-       * @method close
+       * @attribute noCancelOnEscKey
+       * @type boolean
+       * @default false
        */
-      close: function() {
-        this.opened = false;
+      noCancelOnEscKey: {
+        type: Boolean,
+        value: false
       },
 
       /**
-       * Cancels the overlay.
+       * If true, clicking outside the overlay does not cancel the overlay.
        *
-       * @method cancel
+       * @attribute noCancelOnOutsideClick
+       * @type boolean
+       * @default false
        */
-      cancel: function() {
-        this.opened = false,
-        this.fire('core-overlay-cancel', {target: this});
-      },
-
-      // NOTE: wait to call this until we're as sure as possible that target
-      // is styled.
-      ensureTargetSetup: function() {
-        if (this.__overlaySetup) {
-          return;
-        }
-        this.__overlaySetup = true;
-        var style = this.style;
-        style.outline = 'none';
-        style.display = 'none';
-      },
-
-      openedChanged: function() {
-        if (this._openChangedAsync) {
-          this.cancelAsync(this._openChangedAsync);
-        }
-
-        this.transitioning = true;
-
-        this.ensureTargetSetup();
-        this.prepareRenderOpened();
-
-        // async here to allow overlay layer to become visible.
-        this._openChangedAsync = this.async(function() {
-          this.style.display = '';
-          // force layout to ensure transitions will go
-          this.offsetWidth;
-          this.renderOpened();
-          this._openChangedAsync = null;
-        });
-
-        this.fire('core-overlay-open', {
-          opened: this.opened
-        });
-      },
-
-      // tasks which must occur before opening; e.g. making the element visible
-      prepareRenderOpened: function() {
-        if (this._prepareRenderOpenedAsync) {
-          this.cancelAsync(this._prepareRenderOpenedAsync);
-        }
-
-        if (this.opened) {
-          manager.addOverlay(this);
-        }
-        this.prepareBackdrop();
-        // async so we don't auto-close immediately via a click.
-        this._prepareRenderOpenedAsync = this.async(function() {
-          this.enableElementListener(this.opened, document, 'click', 'onCaptureClick', true);
-          this.enableElementListener(this.opened, document, 'keydown', 'onCaptureKeydown', true);
-          this._prepareRenderOpenedAsync = null;
-        });
-        this.enableElementListener(this.opened, window, 'resize',
-            'resizeHandler');
-
-        if (this.opened) {
-          // force layout so SD Polyfill renders
-          this.offsetHeight;
-          this.discoverDimensions();
-          // if we are showing, then take care when positioning
-          this.preparePositioning();
-          this.positionTarget();
-          this.updateTargetDimensions();
-          this.finishPositioning();
-        }
-      },
-
-      // tasks which cause the overlay to actually open; typically play an
-      // animation
-      renderOpened: function() {
-        // this.notifyResize();
-        this.renderBackdropOpened();
-        // var transition = this.getTransition();
-        // if (transition) {
-        //   transition.go(this, {opened: this.opened});
-        // } else {
-          this.transitionend();
-        // }
-      },
-
-      // finishing tasks; typically called via a transition
-      transitionend: function(e) {
-        // make sure this is our transition event.
-        if (e && e.target !== this) {
-          return;
-        }
-        this.transitioning = false;
-        if (!this.opened) {
-          this.resetTargetDimensions();
-          this.style.display = 'none';
-          this.completeBackdrop();
-          manager.removeOverlay(this);
-        }
-
-        this.applyFocus();
-
-        // complete all tasks before firing -completed event
-        this.fire('core-overlay-' + (this.opened ? 'open' : 'close') +
-            '-completed');
-      },
-
-      prepareBackdrop: function() {
-        if (this.backdrop && this.opened) {
-          if (!this._backdrop.parentNode) {
-            Polymer.dom(document.body).appendChild(this._backdrop);
-            this._backdrop.style.zIndex = manager.currentOverlayZ() - 1;
-          }
-          manager.trackBackdrop(this);
-        }
-      },
-
-      renderBackdropOpened: function() {
-        if (this.backdrop && manager.getBackdrops().length < 2) {
-          this._backdrop.classList.toggle('core-opened', this.opened);
-        }
-      },
-
-      completeBackdrop: function() {
-        if (this.backdrop) {
-          manager.trackBackdrop(this);
-          if (manager.getBackdrops().length === 0 && this._backdrop.parentNode) {
-            Polymer.dom(this._backdrop.parentNode).removeChild(this._backdrop);
-          }
-        }
-      },
-
-      preparePositioning: function() {
-        this.style.transition = this.style.webkitTransition = 'none';
-        this.style.transform = this.style.webkitTransform = 'none';
-        this.style.display = '';
-      },
-
-      finishPositioning: function(target) {
-        this.style.display = 'none';
-        this.style.transform = this.style.webkitTransform = '';
-        // force layout to avoid application of transform
-        this.offsetWidth;
-        this.style.transition = this.style.webkitTransition = '';
-      },
-
-      getFocusNode: function() {
-        return Polymer.dom(this).querySelector('[autofocus]') || this;
-      },
-
-      applyFocus: function() {
-        var focusNode = this.getFocusNode();
-        if (this.opened) {
-          if (!this.autoFocusDisabled) {
-            focusNode.focus();
-          }
-        } else {
-          focusNode.blur();
-          if (manager.currentOverlay() == this) {
-            console.warn('Current core-overlay is attempting to focus itself as next! (bug)');
-          } else {
-            manager.focusOverlay();
-          }
-        }
-      },
-
-      // We use the traditional approach of capturing events on document
-      // to to determine if the overlay needs to close. However, due to
-      // ShadowDOM event retargeting, the event target is not useful. Instead
-      // of using it, we attempt to close asynchronously and prevent the close
-      // if a tap event is immediately heard on the target.
-      // TODO(sorvell): This approach will not work with modal. For
-      // this we need a scrim.
-      onCaptureClick: function() {
-        if (!this.noCancelOnOutsideClick && (manager.currentOverlay() == this)) {
-          this.cancelJob = this.async(function() {
-            this.cancel();
-          }, 10);
-        }
-      },
-
-      onClick: function(event) {
-        if (this.cancelJob) {
-          this.cancelAsync(this.cancelJob);
-          this.cancelJob = null;
-        }
-      },
-
-      onCaptureKeydown: function(event) {
-      if (!this.noCancelOnEscKey && (event.keyCode === this.eventKeyCodes.ESC_KEY)) {
-          this.cancel();
-          event.stopPropagation();
-        }
-      },
-
-      /**
-       * Extensions of core-overlay should implement the `resizeHandler`
-       * method to adjust the size and position of the overlay when the
-       * browser window resizes.
-       * @method resizeHandler
-       */
-      resizeHandler: function() {
-        this.updateTargetDimensions();
+      noCancelOnOutsideClick: {
+        type: Boolean,
+        value: false
       }
 
-    });
+    },
 
-  })();
+    get backdropElement() {
+      return this._backdrop;
+    },
+
+    registered: function() {
+      this._backdrop = document.createElement('core-overlay-backdrop');
+    },
+
+    ready: function() {
+      this.addElementListener(this, 'click', 'onClick');
+      this.ensureTargetSetup();
+    },
+
+    detached: function() {
+      this.opened = false;
+      this.completeBackdrop();
+      manager.removeOverlay(this);
+    },
+
+    /**
+     * Toggle the opened state of the overlay.
+     *
+     * @method toggle
+     */
+    toggle: function() {
+      this.opened = !this.opened;
+    },
+
+    /**
+     * Open the overlay. This is equivalent to setting the `opened`
+     * property to true.
+     *
+     * @method open
+     */
+    open: function() {
+      this.opened = true;
+    },
+
+    /**
+     * Close the overlay. This is equivalent to setting the `opened`
+     * property to false.
+     *
+     * @method close
+     */
+    close: function() {
+      this.opened = false;
+    },
+
+    /**
+     * Cancels the overlay.
+     *
+     * @method cancel
+     */
+    cancel: function() {
+      this.opened = false,
+      this.fire('core-overlay-cancel', {target: this});
+    },
+
+    // NOTE: wait to call this until we're as sure as possible that target
+    // is styled.
+    ensureTargetSetup: function() {
+      if (this.__overlaySetup) {
+        return;
+      }
+      this.__overlaySetup = true;
+      var style = this.style;
+      style.outline = 'none';
+      style.display = 'none';
+    },
+
+    openedChanged: function() {
+      if (this._openChangedAsync) {
+        this.cancelAsync(this._openChangedAsync);
+      }
+
+      this.transitioning = true;
+
+      this.ensureTargetSetup();
+      this.toggleListeners();
+
+      if (this.opened) {
+        this.prepareRenderOpened();
+      }
+
+      // async here to allow overlay layer to become visible.
+      this._openChangedAsync = this.async(function() {
+        // overlay becomes visible here
+        this.style.display = '';
+        // force layout to ensure transitions will go
+        this.offsetWidth;
+        if (this.opened) {
+          this.renderOpened();
+        } else {
+          this.renderClosed();
+        }
+        this._openChangedAsync = null;
+      });
+
+      // FIXME fire this after actually opening
+      this.fire('core-overlay-open', {
+        opened: this.opened
+      });
+    },
+
+    toggleListeners: function() {
+      // FIXME need this here or before?
+      if (this._toggleListenersAsync) {
+        this.cancelAsync(this._toggleListenersAsync);
+      }
+      // async so we don't auto-close immediately via a click.
+      this._toggleListenersAsync = this.async(function() {
+        this.toggleElementListener(this.opened, document, 'click', 'onCaptureClick', true);
+        this.toggleElementListener(this.opened, document, 'keydown', 'onCaptureKeydown', true);
+        this._toggleListenersAsync = null;
+      });
+      this.toggleElementListener(this.opened, window, 'resize',
+          'resizeHandler');
+    },
+
+    // tasks which must occur before opening; e.g. making the element visible
+    prepareRenderOpened: function() {
+      manager.addOverlay(this);
+
+      if (this.withBackdrop) {
+        this.backdropElement.prepare(manager.currentOverlayZ() - 1);
+        manager.trackBackdrop(this);
+      }
+
+      // measure, constrain the size and position
+      this.discoverDimensions();
+      // if we are showing, then take care when positioning
+      this.preparePositioning();
+      this.positionTarget();
+      this.updateTargetDimensions();
+      this.finishPositioning();
+    },
+
+    // tasks which cause the overlay to actually open; typically play an
+    // animation
+    renderOpened: function() {
+      // this.notifyResize();
+      this.renderBackdropOpened();
+      // var transition = this.getTransition();
+      // if (transition) {
+      //   transition.go(this, {opened: this.opened});
+      // } else {
+        // this.transitionend();
+      // }
+      this.finishRenderOpened();
+    },
+
+    renderClosed: function() {
+      this.renderBackdropClosed();
+      this.finishRenderClosed();
+    },
+
+    // finishing tasks; typically called via a transition
+    transitionend: function(e) {
+      // make sure this is our transition event.
+      if (e && e.target !== this) {
+        return;
+      }
+      this.transitioning = false;
+      if (this.opened) {
+        this.finishRenderOpened();
+      } else {
+        this.finishRenderClosed();
+      }
+    },
+
+    finishRenderOpened: function() {
+      // focus the child node with [autofocus]
+      var focusNode = this.getFocusNode();
+      if (!this.autoFocusDisabled) {
+        focusNode.focus();
+      }
+
+      this.fire('core-overlay-open-completed');
+    },
+
+    finishRenderClosed: function() {
+      // hide the overlay and remove the backdrop
+      this.resetTargetDimensions();
+      this.style.display = 'none';
+      this.completeBackdrop();
+      manager.removeOverlay(this);
+
+      // focus the next visible overlay if there is one
+      var focusNode = this.getFocusNode();
+      focusNode.blur();
+      if (manager.currentOverlay() == this) {
+        console.warn('Current core-overlay is attempting to focus itself as next! (bug)');
+      } else {
+        manager.focusOverlay();
+      }
+
+      this.fire('core-overlay-close-completed');
+    },
+
+    prepareBackdrop: function() {
+      if (this.withBackdrop && this.opened) {
+        this.backdropElement.prepare(manager.currentOverlayZ() - 1);
+        manager.trackBackdrop(this);
+      }
+    },
+
+    renderBackdropOpened: function() {
+      if (this.withBackdrop && manager.getBackdrops().length < 2) {
+        this.backdropElement.open();
+      }
+    },
+
+    renderBackdropClosed: function() {
+      if (this.withBackdrop && manager.getBackdrops().length < 2) {
+        this.backdropElement.close();
+      }
+    },
+
+    completeBackdrop: function() {
+      if (this.withBackdrop) {
+        manager.trackBackdrop(this);
+        if (manager.getBackdrops().length === 0) {
+          this.backdropElement.complete();
+        }
+      }
+    },
+
+    preparePositioning: function() {
+      this.style.transition = this.style.webkitTransition = 'none';
+      this.style.transform = this.style.webkitTransform = 'none';
+      this.style.display = '';
+    },
+
+    finishPositioning: function(target) {
+      this.style.display = 'none';
+      this.style.transform = this.style.webkitTransform = '';
+      // force layout to avoid application of transform
+      this.offsetWidth;
+      this.style.transition = this.style.webkitTransition = '';
+    },
+
+    getFocusNode: function() {
+      return Polymer.dom(this).querySelector('[autofocus]') || this;
+    },
+
+    applyFocus: function() {
+      var focusNode = this.getFocusNode();
+      if (this.opened) {
+        if (!this.autoFocusDisabled) {
+          focusNode.focus();
+        }
+      } else {
+        focusNode.blur();
+        if (manager.currentOverlay() == this) {
+          console.warn('Current core-overlay is attempting to focus itself as next! (bug)');
+        } else {
+          manager.focusOverlay();
+        }
+      }
+    },
+
+    // We use the traditional approach of capturing events on document
+    // to to determine if the overlay needs to close. However, due to
+    // ShadowDOM event retargeting, the event target is not useful. Instead
+    // of using it, we attempt to close asynchronously and prevent the close
+    // if a tap event is immediately heard on the target.
+    // TODO(sorvell): This approach will not work with modal. For
+    // this we need a scrim.
+    onCaptureClick: function() {
+      if (!this.noCancelOnOutsideClick && (manager.currentOverlay() == this)) {
+        this.cancelJob = this.async(function() {
+          this.cancel();
+        }, 10);
+      }
+    },
+
+    onClick: function(event) {
+      if (this.cancelJob) {
+        this.cancelAsync(this.cancelJob);
+        this.cancelJob = null;
+      }
+    },
+
+    onCaptureKeydown: function(event) {
+    if (!this.noCancelOnEscKey && (event.keyCode === this.eventKeyCodes.ESC_KEY)) {
+        this.cancel();
+        event.stopPropagation();
+      }
+    },
+
+    /**
+     * Extensions of core-overlay should implement the `resizeHandler`
+     * method to adjust the size and position of the overlay when the
+     * browser window resizes.
+     * @method resizeHandler
+     */
+    resizeHandler: function() {
+      this.updateTargetDimensions();
+    }
+
+  });
+
+})();
 
 </script>
