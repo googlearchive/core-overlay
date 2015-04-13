@@ -10,6 +10,8 @@
 
 <link rel="import" href="../polymer/polymer.html">
 
+<!-- FIXME refactor into its own element -->
+
 <!--
 
 Constrains an element's height and width to the window dimensions, and centers it horizontally and
@@ -20,9 +22,8 @@ vertically unless it is already positioned.
 <script>
 
   Polymer.Core = Polymer.Core || {};
-  Polymer.Core.Overlay = Polymer.Core.Overlay || {};
 
-  Polymer.Core.Overlay.Positioner = {
+  Polymer.Core.IronConstraints = {
 
     /**
      * The element that will be sized with a max-height/width. By default this element is the
@@ -33,6 +34,16 @@ vertically unless it is already positioned.
      * @attribute sizingTarget
      * @type Node
      */
+    properties: {
+
+      sizingTarget: {
+        type: Object,
+        value: function() {
+          return this;
+        }
+      }
+
+    },
 
     /**
      * This object memoizes information needed to position and size the target element. By default

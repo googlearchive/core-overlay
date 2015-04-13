@@ -9,12 +9,13 @@
 -->
 
 <link rel="import" href="../../../polymer/polymer.html">
-<link rel="import" href="../../overlay-positioner.html">
+<link rel="import" href="../../../shared-behaviors/shared-behaviors.html">
+<link rel="import" href="../../iron-constraints.html">
 
-<dom-module id="overlay-position-helper-impl">
+<dom-module id="iron-constraints-impl">
 
   <style>
-    overlay-position-helper-impl {
+    iron-constraints-impl {
       background: #000;
       color: #fff;
     }
@@ -24,25 +25,13 @@
 
 <script>
 
-  Polymer({
+  Polymer.withBehaviors({
 
-    is: 'overlay-position-helper-impl',
+    is: 'iron-constraints-impl',
 
-    mixins: [
-      Polymer.Core.Overlay.Positioner
-    ],
-
-    published: {
-      target: Object,
-      sizingTarget: Object
-    },
-
-    configure: function() {
-      return {
-        target: this,
-        sizingTarget: this
-      }
-    },
+    behaviors: [
+      Polymer.Core.IronConstraints
+    ]
 
   });
 

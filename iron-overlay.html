@@ -10,11 +10,12 @@
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/x-theme.html">
+<link rel="import" href="../shared-behaviors/shared-behaviors.html">
 
 <link rel="import" href="iron-overlay-backdrop.html">
 <link rel="import" href="event-utils.html">
+<link rel="import" href="iron-constraints.html">
 <link rel="import" href="overlay-manager.html">
-<link rel="import" href="overlay-positioner.html">
 
 <!--
 The `iron-overlay` element displays overlayed on top of other content. It starts
@@ -142,37 +143,21 @@ Fired when the user cancels the `iron-overlay`.
 
   var manager = Polymer.Core.Overlay.Manager;
 
-  Polymer({
+  Polymer.withBehaviors({
 
     is: 'iron-overlay',
 
     enableCustomStyleProperties: true,
 
+    behaviors: [
+      Polymer.Core.IronConstraints
+    ],
+
     mixins: [
-      Polymer.Core.Overlay.Positioner,
       Polymer.Core.EventUtils
     ],
 
     properties: {
-
-      /**
-       * A `iron-overlay`'s size is guaranteed to be
-       * constrained to the window size. To achieve this, the sizingElement
-       * is sized with a max-height/width. By default this element is the
-       * target element, but it can be specifically set to a specific element
-       * inside the target if that is more appropriate. This is useful, for
-       * example, when a region inside the overlay should scroll if needed.
-       *
-       * @attribute sizingTarget
-       * @type Object
-       * @default this
-       */
-      sizingTarget: {
-        type: Object,
-        value: function() {
-          return this;
-        }
-      },
 
       /**
        * Set opened to true to show an overlay and to false to hide it.

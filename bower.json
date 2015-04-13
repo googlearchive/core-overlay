@@ -12,7 +12,8 @@
   "dependencies": {
     "polymer": "Polymer/polymer#0.8-preview",
     "layout": "Polymer/layout",
-    "paper-styles": "PolymerLabs/paper-styles"
+    "paper-styles": "PolymerLabs/paper-styles",
+    "shared-behaviors": "git@github.com:PolymerLabs/shared-behaviors"
   },
   "devDependencies": {
     "core-icon": "Polymer/core-icon#0.8-preview",

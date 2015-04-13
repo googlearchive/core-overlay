@@ -23,7 +23,7 @@
     <script src="../../test-fixture/test-fixture-mocha.js"></script>
 
     <link rel="import" href="../../test-fixture/test-fixture.html">
-    <link rel="import" href="elements/overlay-position-helper-impl.html">
+    <link rel="import" href="elements/iron-constraints-impl.html">
 
     <style>
       body {
@@ -31,7 +31,7 @@
         height: 100%;
       }
 
-      overlay-position-helper-impl {
+      iron-constraints-impl {
         padding: 10px;
         position: fixed;
       }
@@ -82,44 +82,44 @@
 
     <test-fixture id="sized-xy">
       <template>
-        <overlay-position-helper-impl class="sized-x sized-y">
+        <iron-constraints-impl class="sized-x sized-y">
           Sized (x/y) overlay, auto center/center
-        </overlay-position-helper-impl>
+        </iron-constraints-impl>
       </template>
     </test-fixture>
 
     <test-fixture id="sized-x">
       <template>
-        <overlay-position-helper-impl class="sized-x">
+        <iron-constraints-impl class="sized-x">
           Sized (x) overlay, auto center/center
-        </overlay-position-helper-impl>
+        </iron-constraints-impl>
       </template>
     </test-fixture>
 
     <test-fixture id="positioned-xy">
       <template>
-        <overlay-position-helper-impl class="sized-x positioned-left positioned-top">
+        <iron-constraints-impl class="sized-x positioned-left positioned-top">
           Sized (x/y) overlay, positioned/positioned
-        </overlay-position-helper-impl>
+        </iron-constraints-impl>
       </template>
     </test-fixture>
 
     <test-fixture id="inline-positioned-xy">
       <template>
-        <overlay-position-helper-impl class="sized-x sized-y" style="right:100px;bottom:100px;">
+        <iron-constraints-impl class="sized-x sized-y" style="right:100px;bottom:100px;">
           Sized (x/y) overlay, positioned/positioned
-        </overlay-position-helper-impl>
+        </iron-constraints-impl>
       </template>
     </test-fixture>
 
     <test-fixture id="sectioned">
       <template>
-        <overlay-position-helper-impl class="sized-x">
+        <iron-constraints-impl class="sized-x">
           <div>
             Sized (x) overlay, auto center/center with scrolling section
           </div>
           <div class="internal"></div>
-        </overlay-position-helper-impl>
+        </iron-constraints-impl>
       </template>
     </test-fixture>
 
