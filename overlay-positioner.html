@@ -136,7 +136,7 @@ vertically unless it is already positioned.
      */
     positionTarget: function() {
       // fire positioning event
-      this.fire('core-overlay-position', {target: this.target,
+      this.fire('iron-overlay-position', {target: this.target,
           sizingTarget: this.sizingTarget, opened: this.opened});
       if (!this.dimensions.position.v) {
         this.target.style.top = '0px';

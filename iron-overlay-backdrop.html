@@ -13,12 +13,12 @@
 <style is="x-style">
 
   * {
-    --core-overlay-backdrop-background-color: #000;
+    --iron-overlay-backdrop-background-color: #000;
   }
 
 </style>
 
-<dom-module id="core-overlay-backdrop">
+<dom-module id="iron-overlay-backdrop">
 
   <style>
 
@@ -28,17 +28,17 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: var(--core-overlay-backdrop-background-color);
+      background-color: var(--iron-overlay-backdrop-background-color);
       opacity: 0;
       transition: opacity 0.2s;
 
-      mixin(--core-overlay-backdrop);
+      mixin(--iron-overlay-backdrop);
     }
 
     :host(.core-opened) {
       opacity: 0.6;
 
-      mixin(--core-overlay-backdrop-opened);
+      mixin(--iron-overlay-backdrop-opened);
     }
 
   </style>
@@ -51,7 +51,7 @@
 
   Polymer({
 
-    is: 'core-overlay-backdrop',
+    is: 'iron-overlay-backdrop',
 
     enableCustomStyleProperties: true,
 

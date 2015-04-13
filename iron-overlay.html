@@ -11,52 +11,52 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/x-theme.html">
 
-<link rel="import" href="core-overlay-backdrop.html">
+<link rel="import" href="iron-overlay-backdrop.html">
 <link rel="import" href="event-utils.html">
 <link rel="import" href="overlay-manager.html">
 <link rel="import" href="overlay-positioner.html">
 
 <!--
-The `core-overlay` element displays overlayed on top of other content. It starts
+The `iron-overlay` element displays overlayed on top of other content. It starts
 out hidden and is displayed by setting its `opened` property to true.
-A `core-overlay's` opened state can be toggled by calling the `toggle`
+A `iron-overlay's` opened state can be toggled by calling the `toggle`
 method.
 
-The `core-overlay` will, by default, show/hide itself when it's opened. The
+The `iron-overlay` will, by default, show/hide itself when it's opened. The
 `target` property may be set to another element to cause that element to
 be shown when the overlay is opened.
 
-It's common to want a `core-overlay` to animate to its opened
-position. The `core-overlay` element uses a `core-transition` to handle
+It's common to want a `iron-overlay` to animate to its opened
+position. The `iron-overlay` element uses a `core-transition` to handle
 animation. The default transition is `core-transition-fade` which
 causes the overlay to fade in when displayed. See
 <a href="../core-transition/">`core-transition`</a> for more
-information about customizing a `core-overlay's` opening animation. The
+information about customizing a `iron-overlay's` opening animation. The
 `backdrop` property can be set to true to show a backdrop behind the overlay
 that will darken the rest of the window.
 
-An element that should close the `core-overlay` will automatically
-do so if it's given the `core-overlay-toggle` attribute. This attribute
+An element that should close the `iron-overlay` will automatically
+do so if it's given the `iron-overlay-toggle` attribute. This attribute
 can be customized with the `closeAttribute` property. You can also use
 `closeSelector` if more general matching is needed.
 
-By default  `core-overlay` will close whenever the user taps outside it or
+By default  `iron-overlay` will close whenever the user taps outside it or
 presses the escape key. This behavior can be turned off via the
 `autoCloseDisabled` property.
 
-    <core-overlay>
+    <iron-overlay>
       <h2>Dialog</h2>
       <input placeholder="say something..." autofocus>
       <div>I agree with this wholeheartedly.</div>
-      <button core-overlay-toggle>OK</button>
-    </core-overlay>
+      <button iron-overlay-toggle>OK</button>
+    </iron-overlay>
 
-`core-overlay` will automatically size and position itself according to the
+`iron-overlay` will automatically size and position itself according to the
 following rules. The overlay's size is constrained such that it does not
 overflow the screen. This is done by setting maxHeight/maxWidth on the
 `sizingTarget`. If the `sizingTarget` already has a setting for one of these
 properties, it will not be overridden. The overlay should
-be positioned via css or imperatively using the `core-overlay-position` event.
+be positioned via css or imperatively using the `iron-overlay-position` event.
 If the overlay is not positioned vertically via setting `top` or `bottom`, it
 will be centered vertically. The same is true horizontally via a setting to
 `left` or `right`. In addition, css `margin` can be used to provide some space
@@ -64,36 +64,36 @@ around the overlay. This can be used to ensure
 that, for example, a drop shadow is always visible around the overlay.
 
 @group Core Elements
-@element core-overlay
+@element iron-overlay
 @mixins Polymer.CoreResizer https://github.com/polymer/core-resizable
 @homepage github.io
 -->
 <!--
-Fired when the `core-overlay`'s `opened` property changes.
+Fired when the `iron-overlay`'s `opened` property changes.
 
-@event core-overlay-open
+@event iron-overlay-open
 @param {Object} detail
 @param {Object} detail.opened the opened state
 -->
 <!--
-Fired when the `core-overlay` has completely opened.
+Fired when the `iron-overlay` has completely opened.
 
-@event core-overlay-open-completed
+@event iron-overlay-open-completed
 -->
 <!--
-Fired when the `core-overlay` has completely closed.
+Fired when the `iron-overlay` has completely closed.
 
-@event core-overlay-close-completed
+@event iron-overlay-close-completed
 -->
 <!--
-Fired when the `core-overlay` needs to position itself. Optionally, implement
+Fired when the `iron-overlay` needs to position itself. Optionally, implement
 in order to position an overlay via code. If the overlay was not otherwise
 positioned, it's important to indicate how the overlay has been positioned by
 setting the `dimensions.position` object. For example, if the overlay has been
 positioned via setting `right` and `top`, set dimensions.position to an
 object like this: `{v: 'top', h: 'right'}`.
 
-@event core-overlay-position
+@event iron-overlay-position
 @param {Object} detail
 @param {Object} detail.target the overlay target
 @param {Object} detail.sizingTarget the overlay sizing target
@@ -101,9 +101,9 @@ object like this: `{v: 'top', h: 'right'}`.
 -->
 
 <!--
-Fired when the user cancels the `core-overlay`.
+Fired when the user cancels the `iron-overlay`.
 
-@event core-overlay-cancel
+@event iron-overlay-cancel
 @param {Object} detail
 @param {Object} detail.target the overlay target
 -->
@@ -114,22 +114,22 @@ Fired when the user cancels the `core-overlay`.
   /* https://github.com/Polymer/polymer/issues/1406 */
 
   * {
-    --core-overlay-background-color: var(--primary-background-color);
-    --core-overlay-color: var(--primary-text-color);
+    --iron-overlay-background-color: var(--primary-background-color);
+    --iron-overlay-color: var(--primary-text-color);
   }
 
 </style>
 
-<dom-module id="core-overlay">
+<dom-module id="iron-overlay">
 
   <style>
 
     :host {
       position: fixed;
-      background: var(--core-overlay-background-color);
-      color: var(--core-overlay-color);
+      background: var(--iron-overlay-background-color);
+      color: var(--iron-overlay-color);
 
-      mixin(--core-overlay);
+      mixin(--iron-overlay);
     }
 
   </style>
@@ -144,7 +144,7 @@ Fired when the user cancels the `core-overlay`.
 
   Polymer({
 
-    is: 'core-overlay',
+    is: 'iron-overlay',
 
     enableCustomStyleProperties: true,
 
@@ -156,7 +156,7 @@ Fired when the user cancels the `core-overlay`.
     properties: {
 
       /**
-       * A `core-overlay`'s size is guaranteed to be
+       * A `iron-overlay`'s size is guaranteed to be
        * constrained to the window size. To achieve this, the sizingElement
        * is sized with a max-height/width. By default this element is the
        * target element, but it can be specifically set to a specific element
@@ -176,22 +176,22 @@ Fired when the user cancels the `core-overlay`.
 
       /**
        * Set opened to true to show an overlay and to false to hide it.
-       * A `core-overlay` may be made initially opened by setting its
+       * A `iron-overlay` may be made initially opened by setting its
        * `opened` attribute.
        * @attribute opened
        * @type boolean
        * @default false
        */
       opened: {
+        observer: 'openedChanged',
         type: Boolean,
-        value: false,
-        observer: 'openedChanged'
+        value: false
       },
 
       /**
        * If true, the overlay has a backdrop darkening the rest of the screen.
        * The backdrop element is attached to the document body and may be styled
-       * with the class `core-overlay-backdrop`. When opened the `core-opened`
+       * with the class `iron-overlay-backdrop`. When opened the `core-opened`
        * class is applied.
        *
        * @attribute backdrop
@@ -234,7 +234,7 @@ Fired when the user cancels the `core-overlay`.
     },
 
     registered: function() {
-      this._backdrop = document.createElement('core-overlay-backdrop');
+      this._backdrop = document.createElement('iron-overlay-backdrop');
     },
 
     ready: function() {
@@ -284,7 +284,7 @@ Fired when the user cancels the `core-overlay`.
      */
     cancel: function() {
       this.opened = false,
-      this.fire('core-overlay-cancel', {target: this});
+      this.fire('iron-overlay-cancel');
     },
 
     // NOTE: wait to call this until we're as sure as possible that target
@@ -328,7 +328,7 @@ Fired when the user cancels the `core-overlay`.
       });
 
       // FIXME fire this after actually opening
-      this.fire('core-overlay-open', {
+      this.fire('iron-overlay-open', {
         opened: this.opened
       });
     },
@@ -406,7 +406,7 @@ Fired when the user cancels the `core-overlay`.
         focusNode.focus();
       }
 
-      this.fire('core-overlay-open-completed');
+      this.fire('iron-overlay-open-completed');
     },
 
     finishRenderClosed: function() {
@@ -420,12 +420,12 @@ Fired when the user cancels the `core-overlay`.
       var focusNode = this.getFocusNode();
       focusNode.blur();
       if (manager.currentOverlay() == this) {
-        console.warn('Current core-overlay is attempting to focus itself as next! (bug)');
+        console.warn('Current iron-overlay is attempting to focus itself as next! (bug)');
       } else {
         manager.focusOverlay();
       }
 
-      this.fire('core-overlay-close-completed');
+      this.fire('iron-overlay-close-completed');
     },
 
     prepareBackdrop: function() {
@@ -483,7 +483,7 @@ Fired when the user cancels the `core-overlay`.
       } else {
         focusNode.blur();
         if (manager.currentOverlay() == this) {
-          console.warn('Current core-overlay is attempting to focus itself as next! (bug)');
+          console.warn('Current iron-overlay is attempting to focus itself as next! (bug)');
         } else {
           manager.focusOverlay();
         }
@@ -520,7 +520,7 @@ Fired when the user cancels the `core-overlay`.
     },
 
     /**
-     * Extensions of core-overlay should implement the `resizeHandler`
+     * Extensions of iron-overlay should implement the `resizeHandler`
      * method to adjust the size and position of the overlay when the
      * browser window resizes.
      * @method resizeHandler
