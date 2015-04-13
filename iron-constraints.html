@@ -41,21 +41,48 @@ vertically unless it is already positioned.
         value: function() {
           return this;
         }
+      },
+
+      /**
+       * The element to constrain itself to. The element will be sized such that it fits within
+       * the constrainTarget, and centered horizontally and vertically. By default, this is
+       * the window.
+       *
+       * @attribute constrainTarget
+       * @type Node
+       * @default window
+       */
+      constrainTarget: {
+        type: Object,
+        value: window
+      },
+
+      /**
+       * This object memoizes information needed to position and size the target element. By default
+       * the target element is centered along an axis if it is not positioned otherwise. Its size
+       * is constrained to the window size unless a max- or min-width/height is set.
+       *
+       * @attribute dimensions
+       * @type Object
+       */
+      dimensions: {
+        // FIXME need better docs
+        type: Object
       }
 
     },
 
-    /**
-     * This object memoizes information needed to position and size the target element. By default
-     * the target element is centered along an axis if it is not positioned otherwise. Its size
-     * is constrained to the window size unless a max- or min-width/height is set.
-     *
-     * @attribute dimensions
-     * @type Object
-     */
 
     get target() {
       return this;
+    },
+
+    get constrainWidth() {
+      return this.constrainTarget === window ? this.constrainTarget.innerWidth : this.constrainTarget.getBoundingClientRect().width;
+    },
+
+    get constrainHeight() {
+      return this.constrainTarget === window ? this.constrainTarget.innerHeight : this.constrainTarget.getBoundingClientRect().height;
     },
 
     /**
@@ -128,13 +155,13 @@ vertically unless it is already positioned.
     },
 
     /**
-     * Constrains one of the target element's dimensions to the window.
+     * Constrains one of the target element's dimensions to the constrainTarget
      */
     sizeDimension: function(rect, positionedBy, start, end, extent) {
       var dims = this.dimensions;
       var flip = (positionedBy === end);
       var m = flip ? start : end;
-      var ws = window['inner' + extent];
+      var ws = extent === 'Width' ? this.constrainWidth : this.constrainHeight;
       var o = dims.margin[m] + (flip ? ws - rect[end] :
           rect[start]);
       var offset = 'offset' + extent;
@@ -167,13 +194,13 @@ vertically unless it is already positioned.
         return;
       }
       if (!this.dimensions.position.v) {
-        var t = (window.innerHeight - this.target.offsetHeight) / 2;
+        var t = (this.constrainHeight - this.target.offsetHeight) / 2;
         t -= this.dimensions.margin.top;
         this.target.style.top = t + 'px';
       }
 
       if (!this.dimensions.position.h) {
-        var l = (window.innerWidth - this.target.offsetWidth) / 2;
+        var l = (this.constrainWidth - this.target.offsetWidth) / 2;
         l -= this.dimensions.margin.left;
         this.target.style.left = l + 'px';
       }

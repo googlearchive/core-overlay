@@ -123,6 +123,18 @@
       </template>
     </test-fixture>
 
+    <test-fixture id="constrain-target">
+      <template>
+        <div class="constrain" style="position: fixed; top: 0; left: 0; width: 50vw; height: 50vh; border: 1px solid black;">
+          <iron-constraints-impl class="overlay">
+            <div>
+              Auto center/center to parent element
+            </div>
+          </iron-constraints-impl>
+        </div>
+      </template>
+    </test-fixture>
+
     <template id="ipsum">
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </template>
@@ -176,7 +188,6 @@
         });
 
         test('discoverDimensions return correct data', function() {
-          console.log(overlay.dimensions);
           assert.deepEqual(overlay.dimensions, {
             position: {
               v: 'top',
@@ -213,7 +224,6 @@
         });
 
         test('discoverDimensions return correct data', function() {
-          console.log(overlay.dimensions);
           assert.deepEqual(overlay.dimensions, {
             position: {
               v: 'bottom',
@@ -293,7 +303,6 @@
         });
 
         test('discoverDimensions return correct data', function() {
-          console.log(overlay.dimensions);
           assert.deepEqual(overlay.dimensions, {
             position: {
               v: 'top',
@@ -567,6 +576,33 @@
         test('sectioned scrolling overlay is constrained to viewport height', function() {
           var rect = overlay.getBoundingClientRect();
           assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+
+      });
+
+      /////////////////////////////////////////////////////////////////////////
+      // custom constrain target
+      ////////////////////////////////////////////////////////////////////////
+
+      suite('custom constrain target', function() {
+        var overlay, constrain;
+
+        setup(function() {
+          constrain = fixture('constrain-target');
+          overlay = Polymer.dom(constrain).querySelector('.overlay')
+
+          makeScrolling(overlay);
+          overlay.constrainTarget = constrain;
+
+          overlay.discoverDimensions();
+          overlay.updateTargetDimensions();
+        });
+
+        test('overlay is constrained to a custom constrain target', function() {
+          var rect = overlay.getBoundingClientRect();
+          var crect = constrain.getBoundingClientRect();
+          assert.isTrue(rect.height <= crect.height, 'width is less than or equal to constrain target width');
+          assert.isTrue(rect.height <= crect.height, 'height is less than or equal to constrain target height');
         });
 
       });
